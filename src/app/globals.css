@@ -1,0 +1,57 @@
+@import url("https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap");
+@import "tailwindcss";
+
+/*
+  ちるまる design tokens
+  ------------------------------------------------------------
+  Color:
+    --cream       #FBF3EC  page background, warm cream (not the AI-cliche F4F1EA)
+    --blush       #F4D9CE  soft blush, section fills / hover states
+    --terracotta  #E08668  primary accent, buttons, active tag
+    --clay        #C15F42  deep accent, headings on light, pressed states
+    --umber       #4A362E  primary text, warm dark brown (not pure black)
+    --sand        #EFE3D3  secondary fill, chips (unselected)
+  Type:
+    display: "Zen Maru Gothic" - rounded, soft, friendly (matches rounded-corner mockup)
+    body/UI: "Zen Kaku Gothic New" - clean, warm, legible at small sizes for JP text
+  Signature:
+    "onigiri-fold" card corner - a soft folded-corner shape (like a wrapped onigiri /
+    kawaii paper bag) on every store card, instead of a generic shadow-only card.
+*/
+
+:root {
+  --cream: #fbf3ec;
+  --blush: #f4d9ce;
+  --terracotta: #e08668;
+  --clay: #c15f42;
+  --umber: #4a362e;
+  --sand: #efe3d3;
+
+  --background: var(--cream);
+  --foreground: var(--umber);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-cream: var(--cream);
+  --color-blush: var(--blush);
+  --color-terracotta: var(--terracotta);
+  --color-clay: var(--clay);
+  --color-umber: var(--umber);
+  --color-sand: var(--sand);
+  --font-display: "Zen Maru Gothic", sans-serif;
+  --font-sans: "Zen Kaku Gothic New", sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+::selection {
+  background: var(--terracotta);
+  color: var(--cream);
+}
+
