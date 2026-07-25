@@ -51,6 +51,15 @@ function toStore(record: AirtableRecord): Store {
   };
 }
 
+/**
+ * Fetches every store record from the Stores table, paginating through
+ * Airtable's 100-record-per-page limit automatically.
+ *
+ * Requires AIRTABLE_API_KEY (a Personal Access Token with data.records:read
+ * scope on this base) to be set as an environment variable. Never hard-code
+ * the token here — set it in `.env.local` locally and in your hosting
+ * provider's environment variable settings in production.
+ */
 export async function getAllStores(): Promise<Store[]> {
   if (!API_KEY) {
     throw new Error(
@@ -68,6 +77,8 @@ export async function getAllStores(): Promise<Store[]> {
 
     const res = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${API_KEY}` },
+      // Revalidate the store list every 5 minutes so newly-added stores in
+      // Airtable show up without needing a full redeploy.
       next: { revalidate: 300 },
     });
 
@@ -86,4 +97,54 @@ export async function getAllStores(): Promise<Store[]> {
 export async function getStoreById(id: string): Promise<Store | null> {
   const stores = await getAllStores();
   return stores.find((s) => s.id === id) ?? null;
+}
+
+/**
+ * Appends a photo URL to a store's Photos/Logo field (newline-separated).
+ * Requires a token with data.records:write scope — the admin page uses
+ * ADMIN_AIRTABLE_API_KEY if set, falling back to AIRTABLE_API_KEY.
+ */
+export async function addStorePhoto(storeId: string, photoUrl: string): Promise<void> {
+  const writeKey = process.env.ADMIN_AIRTABLE_API_KEY ?? API_KEY;
+  if (!writeKey) {
+    throw new Error("No Airtable API key configured for writes.");
+  }
+
+  // Fetch the current value first so we append rather than overwrite.
+  const getRes = await fetch(
+    `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${storeId}`,
+    { headers: { Authorization: `Bearer ${writeKey}` }, cache: "no-store" }
+  );
+  if (!getRes.ok) {
+    throw new Error(`Failed to read store before update: ${getRes.status}`);
+  }
+  const current = await getRes.json();
+  const existing: string = current.fields?.["Photos/Logo"] ?? "";
+  const updated = existing ? `${existing}\n${photoUrl}` : photoUrl;
+
+  const patchRes = await fetch(
+    `https://api.airtable.com/v0/${BASE_ID}/${TABLE_ID}/${storeId}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${writeKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ fields: { "Photos/Logo": updated } }),
+    }
+  );
+  if (!patchRes.ok) {
+    const body = await patchRes.text();
+    throw new Error(`Failed to update store: ${patchRes.status} ${body}`);
+  }
+}
+
+export type StoreOption = { id: string; name: string; area: string; photoUrls: string[] };
+
+/** Lightweight list of stores for the admin picker (id + name + area + existing photos). */
+export async function getStoreOptions(): Promise<StoreOption[]> {
+  const stores = await getAllStores();
+  return stores
+    .map((s) => ({ id: s.id, name: s.name, area: s.area, photoUrls: s.photoUrls }))
+    .sort((a, b) => a.name.localeCompare(b.name, "ja"));
 }
