@@ -15,6 +15,18 @@ export default async function StorePage({
   const store = await getStoreById(id).catch(() => null);
   if (!store) notFound();
 
+  // Map Location in Airtable is free text and almost always empty, so fall
+  // back to "store name + address" as the map search query when it's blank.
+  const mapQuery =
+    (store.mapUrl && store.mapUrl.trim()) ||
+    [store.name, store.address].filter(Boolean).join(" ");
+  const mapSearchUrl = mapQuery
+    ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`
+    : null;
+  const mapEmbedUrl = mapQuery
+    ? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`
+    : null;
+
   return (
     <>
       <SiteHeader />
@@ -103,14 +115,14 @@ export default async function StorePage({
               </dl>
 
               <div className="mt-6 flex flex-wrap gap-3">
-                {store.mapUrl && (
+                {mapSearchUrl && (
                   <a
-                    href={store.mapUrl}
+                    href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-full bg-terracotta px-5 py-2.5 text-sm font-medium text-white hover:bg-clay"
                   >
-                    地図で見る
+                    Googleマップで開く
                   </a>
                 )}
                 {store.website && (
@@ -124,6 +136,20 @@ export default async function StorePage({
                   </a>
                 )}
               </div>
+
+              {mapEmbedUrl && (
+                <div className="mt-6 overflow-hidden rounded-2xl border border-umber/10">
+                  <iframe
+                    src={mapEmbedUrl}
+                    width="100%"
+                    height="280"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title={`${store.name}の地図`}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
