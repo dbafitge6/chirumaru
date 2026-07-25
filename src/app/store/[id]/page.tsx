@@ -15,8 +15,6 @@ export default async function StorePage({
   const store = await getStoreById(id).catch(() => null);
   if (!store) notFound();
 
-  // Map Location in Airtable is free text and almost always empty, so fall
-  // back to "store name + address" as the map search query when it's blank.
   const mapQuery =
     (store.mapUrl && store.mapUrl.trim()) ||
     [store.name, store.address].filter(Boolean).join(" ");
@@ -85,6 +83,20 @@ export default async function StorePage({
                 </p>
               )}
 
+              {store.photoUrls.length > 1 && (
+                <div className="mt-6 grid grid-cols-3 gap-2">
+                  {store.photoUrls.slice(1).map((url, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={url + i}
+                      src={url}
+                      alt={`${store.name}の写真${i + 2}`}
+                      className="aspect-square w-full rounded-xl object-cover"
+                    />
+                  ))}
+                </div>
+              )}
+
               <dl className="mt-6 space-y-3 border-t border-umber/10 pt-6 text-sm">
                 {store.address && (
                   <div className="flex gap-3">
@@ -116,7 +128,7 @@ export default async function StorePage({
 
               <div className="mt-6 flex flex-wrap gap-3">
                 {mapSearchUrl && (
-                  <a
+                  
                     href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
@@ -126,7 +138,7 @@ export default async function StorePage({
                   </a>
                 )}
                 {store.website && (
-                  <a
+                  
                     href={store.website}
                     target="_blank"
                     rel="noreferrer"

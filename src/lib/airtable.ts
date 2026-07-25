@@ -22,15 +22,25 @@ function splitTags(raw: string | undefined): string[] {
     .filter(Boolean);
 }
 
+function splitPhotoUrls(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(/[\n,]/)
+    .map((u) => u.trim())
+    .filter(Boolean);
+}
+
 function toStore(record: AirtableRecord): Store {
   const f = record.fields;
+  const photoUrls = splitPhotoUrls(f["Photos/Logo"]);
   return {
     id: record.id,
     name: f["Store Name"] ?? "",
     address: f["Address"] ?? "",
     phone: f["電話番号"] ?? "",
     hours: f["Business Hours"] ?? "",
-    photoUrl: f["Photos/Logo"] ?? "",
+    photoUrl: photoUrls[0] ?? "",
+    photoUrls,
     tags: splitTags(f["Tags"]),
     area: f["Area"] ?? "",
     website: f["Website"] ?? "",
@@ -41,15 +51,6 @@ function toStore(record: AirtableRecord): Store {
   };
 }
 
-/**
- * Fetches every store record from the Stores table, paginating through
- * Airtable's 100-record-per-page limit automatically.
- *
- * Requires AIRTABLE_API_KEY (a Personal Access Token with data.records:read
- * scope on this base) to be set as an environment variable. Never hard-code
- * the token here — set it in `.env.local` locally and in your hosting
- * provider's environment variable settings in production.
- */
 export async function getAllStores(): Promise<Store[]> {
   if (!API_KEY) {
     throw new Error(
@@ -67,8 +68,6 @@ export async function getAllStores(): Promise<Store[]> {
 
     const res = await fetch(url.toString(), {
       headers: { Authorization: `Bearer ${API_KEY}` },
-      // Revalidate the store list every 5 minutes so newly-added stores in
-      // Airtable show up without needing a full redeploy.
       next: { revalidate: 300 },
     });
 
