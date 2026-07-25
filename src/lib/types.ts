@@ -5,6 +5,7 @@ export type Store = {
   phone: string;
   hours: string;
   photoUrl: string;
+  photoUrls: string[];
   tags: string[];
   area: string;
   website: string;
