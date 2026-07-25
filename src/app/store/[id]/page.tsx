@@ -85,20 +85,6 @@ export default async function StorePage({
                 </p>
               )}
 
-              {store.photoUrls.length > 1 && (
-                <div className="mt-6 grid grid-cols-3 gap-2">
-                  {store.photoUrls.slice(1).map((url, i) => (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      key={url + i}
-                      src={url}
-                      alt={`${store.name}の写真${i + 2}`}
-                      className="aspect-square w-full rounded-xl object-cover"
-                    />
-                  ))}
-                </div>
-              )}
-
               <dl className="mt-6 space-y-3 border-t border-umber/10 pt-6 text-sm">
                 {store.address && (
                   <div className="flex gap-3">
