@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export default function SiteHeader() {
@@ -5,9 +6,13 @@ export default function SiteHeader() {
     <header className="border-b border-umber/10 bg-cream/95 backdrop-blur-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-terracotta font-display text-lg font-bold text-white">
-            ち
-          </span>
+          <Image
+            src="/icon-chi.png"
+            alt="ちるまる"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-full object-cover"
+          />
           <span className="font-display text-xl font-bold text-clay">
             ちるまる
           </span>
