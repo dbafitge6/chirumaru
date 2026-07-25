@@ -15,8 +15,6 @@ export default async function StorePage({
   const store = await getStoreById(id).catch(() => null);
   if (!store) notFound();
 
-  // Map Location in Airtable is free text and almost always empty, so fall
-  // back to "store name + address" as the map search query when it's blank.
   const mapQuery =
     (store.mapUrl && store.mapUrl.trim()) ||
     [store.name, store.address].filter(Boolean).join(" ");
@@ -26,6 +24,7 @@ export default async function StorePage({
   const mapEmbedUrl = mapQuery
     ? `https://www.google.com/maps?q=${encodeURIComponent(mapQuery)}&output=embed`
     : null;
+  const photoSubmitUrl = `https://docs.google.com/forms/d/e/1FAIpQLSdnUJREkYKXAg50FVopvcFer6OxtRG41dTSL7RDaHy34yoDfQ/viewform?usp=pp_url&entry.1442856618=${encodeURIComponent(store.name)}`;
 
   return (
     <>
@@ -85,6 +84,20 @@ export default async function StorePage({
                 </p>
               )}
 
+              {store.photoUrls.length > 1 && (
+                <div className="mt-6 grid grid-cols-3 gap-2">
+                  {store.photoUrls.slice(1).map((url, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={url + i}
+                      src={url}
+                      alt={`${store.name}の写真${i + 2}`}
+                      className="aspect-square w-full rounded-xl object-cover"
+                    />
+                  ))}
+                </div>
+              )}
+
               <dl className="mt-6 space-y-3 border-t border-umber/10 pt-6 text-sm">
                 {store.address && (
                   <div className="flex gap-3">
@@ -116,8 +129,8 @@ export default async function StorePage({
 
               <div className="mt-6 flex flex-wrap gap-3">
                 {mapSearchUrl && (
-                  <a
-                    href={mapSearchUrl}
+                  
+<a                    href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-full bg-terracotta px-5 py-2.5 text-sm font-medium text-white hover:bg-clay"
@@ -126,8 +139,8 @@ export default async function StorePage({
                   </a>
                 )}
                 {store.website && (
-                  <a
-                    href={store.website}
+                  
+<a                    href={store.website}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-full border border-umber/15 bg-white px-5 py-2.5 text-sm font-medium text-umber hover:border-terracotta/50"
@@ -135,6 +148,14 @@ export default async function StorePage({
                     公式サイト
                   </a>
                 )}
+                
+<a                  href={photoSubmitUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-terracotta/40 bg-blush/40 px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush"
+                >
+                  📷 写真を投稿する
+                </a>
               </div>
 
               {mapEmbedUrl && (
