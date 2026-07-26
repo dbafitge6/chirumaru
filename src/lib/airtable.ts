@@ -100,6 +100,25 @@ export async function getStoreById(id: string): Promise<Store | null> {
 }
 
 /**
+ * Fetches a store along with the ids of its neighbors in the same order
+ * stores appear on the homepage list, so the store detail page can offer
+ * "previous" / "next" navigation.
+ */
+export async function getStoreWithNeighbors(
+  id: string
+): Promise<{ store: Store; prevId: string | null; nextId: string | null } | null> {
+  const stores = await getAllStores();
+  const index = stores.findIndex((s) => s.id === id);
+  if (index === -1) return null;
+
+  return {
+    store: stores[index],
+    prevId: index > 0 ? stores[index - 1].id : null,
+    nextId: index < stores.length - 1 ? stores[index + 1].id : null,
+  };
+}
+
+/**
  * Appends a photo URL to a store's Photos/Logo field (newline-separated).
  * Requires a token with data.records:write scope — the admin page uses
  * ADMIN_AIRTABLE_API_KEY if set, falling back to AIRTABLE_API_KEY.
