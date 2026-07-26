@@ -12,6 +12,7 @@ export default function SiteHeader() {
             width={36}
             height={36}
             unoptimized
+            priority
             className="h-9 w-9 rounded-full object-cover"
           />
           <span className="font-display text-xl font-bold text-clay">
