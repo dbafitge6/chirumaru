@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getStoreById } from "@/lib/airtable";
+import { getStoreWithNeighbors } from "@/lib/airtable";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
@@ -12,8 +12,9 @@ export default async function StorePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const store = await getStoreById(id).catch(() => null);
-  if (!store) notFound();
+  const result = await getStoreWithNeighbors(id).catch(() => null);
+  if (!result) notFound();
+  const { store, prevId, nextId } = result;
 
   const mapQuery =
     (store.mapUrl && store.mapUrl.trim()) ||
@@ -32,12 +33,40 @@ export default async function StorePage({
 
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
-          <Link
-            href="/"
-            className="text-sm text-terracotta hover:text-clay"
-          >
-            ← 一覧にもどる
-          </Link>
+          <div className="flex items-center justify-between gap-2">
+            {prevId ? (
+              <Link
+                href={`/store/${prevId}`}
+                className="inline-flex items-center gap-1 rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:border-terracotta/50 hover:text-clay"
+              >
+                ← 前へ
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-umber/10 bg-white/50 px-4 py-2 text-sm font-medium text-umber/30">
+                ← 前へ
+              </span>
+            )}
+
+            <Link
+              href="/"
+              className="text-sm text-terracotta hover:text-clay"
+            >
+              一覧にもどる
+            </Link>
+
+            {nextId ? (
+              <Link
+                href={`/store/${nextId}`}
+                className="inline-flex items-center gap-1 rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:border-terracotta/50 hover:text-clay"
+              >
+                次へ →
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-umber/10 bg-white/50 px-4 py-2 text-sm font-medium text-umber/30">
+                次へ →
+              </span>
+            )}
+          </div>
 
           <div className="mt-4 overflow-hidden rounded-[28px] bg-white/80 shadow-[0_6px_20px_-8px_rgba(74,54,46,0.25)]">
             <div className="h-56 w-full bg-gradient-to-br from-blush to-sand">
@@ -129,8 +158,8 @@ export default async function StorePage({
 
               <div className="mt-6 flex flex-wrap gap-3">
                 {mapSearchUrl && (
-                  
-<a                    href={mapSearchUrl}
+                  <a
+                    href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-full bg-terracotta px-5 py-2.5 text-sm font-medium text-white hover:bg-clay"
@@ -139,8 +168,8 @@ export default async function StorePage({
                   </a>
                 )}
                 {store.website && (
-                  
-<a                    href={store.website}
+                  <a
+                    href={store.website}
                     target="_blank"
                     rel="noreferrer"
                     className="rounded-full border border-umber/15 bg-white px-5 py-2.5 text-sm font-medium text-umber hover:border-terracotta/50"
@@ -148,8 +177,9 @@ export default async function StorePage({
                     公式サイト
                   </a>
                 )}
-                
-<a                  href={photoSubmitUrl}
+
+                <a
+                  href={photoSubmitUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-terracotta/40 bg-blush/40 px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush"
@@ -172,6 +202,41 @@ export default async function StorePage({
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-between gap-2">
+            {prevId ? (
+              <Link
+                href={`/store/${prevId}`}
+                className="inline-flex items-center gap-1 rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:border-terracotta/50 hover:text-clay"
+              >
+                ← 前へ
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-umber/10 bg-white/50 px-4 py-2 text-sm font-medium text-umber/30">
+                ← 前へ
+              </span>
+            )}
+
+            <Link
+              href="/"
+              className="text-sm text-terracotta hover:text-clay"
+            >
+              一覧にもどる
+            </Link>
+
+            {nextId ? (
+              <Link
+                href={`/store/${nextId}`}
+                className="inline-flex items-center gap-1 rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:border-terracotta/50 hover:text-clay"
+              >
+                次へ →
+              </Link>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-umber/10 bg-white/50 px-4 py-2 text-sm font-medium text-umber/30">
+                次へ →
+              </span>
+            )}
           </div>
         </div>
       </main>
