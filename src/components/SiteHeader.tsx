@@ -7,7 +7,7 @@ export default function SiteHeader() {
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           <Image
-            src="/icon-chi-v2.png"
+            src="/icon-original.png"
             alt="ちるまる"
             width={36}
             height={36}
