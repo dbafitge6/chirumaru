@@ -1,7 +1,7 @@
 ---
 name: data-quality-checker
 description: chirumaruのAirtableデータベースを定期的にチェックし、重複レコード、エリア表記ゆれ、一言メモ/メニューの漢字誤変換(OCR/AI生成起因)を検出・修正する。
-tools: mcp__airtable__list_records_for_table, mcp__airtable__update_records_for_table, mcp__airtable__search_records
+tools: mcp__claude_ai_Airtable__list_records_for_table, mcp__claude_ai_Airtable__update_records_for_table
 ---
 
 データ品質担当。base: appyyoKM7RprQRht8 / table: tblcOdcqCxzb7kX0e
