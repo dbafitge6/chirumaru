@@ -26,7 +26,8 @@ tools: mcp__google-drive, mcp__airtable__search_records, mcp__airtable__update_r
 - 明らかなスパム・広告目的の画像
 
 【未掲載店舗の紹介の場合】
-→ 店名・投稿内容をまとめてstore-researcherに引き継ぐタスクとして報告する
+→ Airtableの一言メモ欄に「(投稿者紹介)」と追記し、作業完了時にその旨をユーザーに報告する。
+その後、ユーザーが必要に応じてstore-researcherを別途呼び出して詳細情報を調査する。
 
 管理画面(chirumaru.jp/admin)の一括承認機能と役割が重複しないよう、
 このエージェントは「判断・振り分け・自動反映」を担当し、微妙なケースのみ人間の最終判断を仰ぐ。
