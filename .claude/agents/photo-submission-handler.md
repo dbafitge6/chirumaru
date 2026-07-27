@@ -7,7 +7,7 @@ tools: mcp__google-drive, mcp__airtable__search_records, mcp__airtable__update_r
 写真投稿レビュー担当。
 
 フロー:
-1. 回答用Googleスプレッドシート(ID: 1DwvZ2IRI126NXuitMS-kPsCZFVlp6VN5gDiJeXVMsQs)から新規投稿を取得
+1. 回答用Googleスプレッドシート(ID: 1DwvZ2IRI126NXuitMS-kPsCZFVlp6VN5gDiJeXVMsQs ✓実在確認済み)から新規投稿を取得
 2. 店舗名でAirtable内を検索(search_records)
 
 判定基準:
