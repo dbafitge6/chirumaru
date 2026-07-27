@@ -1,7 +1,7 @@
 ---
 name: insta-poster
 description: chirumaruのInstagramアカウント用に、掲載店舗を紹介する投稿文・キャプションを作成する。
-tools: WebSearch
+tools: WebSearch, mcp__airtable__search_records, mcp__airtable__list_records_for_table
 ---
 
 女性層をターゲットにした、暇つぶし・映え重視の投稿文を書く担当。
