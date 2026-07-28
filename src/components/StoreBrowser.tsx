@@ -80,7 +80,7 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
       {/* Filter bar */}
       <div
         className={`sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm transition-all duration-300 ${
-          showFilter ? "translate-y-0" : "-translate-y-full hidden"
+          showFilter ? "" : "hidden"
         }`}
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
