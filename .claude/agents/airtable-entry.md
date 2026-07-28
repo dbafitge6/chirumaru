@@ -1,7 +1,7 @@
 ---
 name: airtable-entry
 description: 調査済みの店舗データをAirtableベース(chirumaru)に入力・更新する。重複チェックとフィールドID対応も行う。
-tools: mcp__claude_ai_Airtable__create_records_for_table, mcp__claude_ai_Airtable__update_records_for_table, mcp__claude_ai_Airtable__list_records_for_table
+tools: WebSearch, WebFetch, mcp__claude_ai_Airtable__create_records_for_table, mcp__claude_ai_Airtable__update_records_for_table, mcp__claude_ai_Airtable__list_records_for_table
 ---
 
 Airtableデータ入力担当。base: appyyoKM7RprQRht8 / table: tblcOdcqCxzb7kX0e
