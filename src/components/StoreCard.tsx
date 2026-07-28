@@ -1,10 +1,27 @@
 import Link from "next/link";
 import type { Store } from "@/lib/types";
 
-export default function StoreCard({ store }: { store: Store }) {
+export default function StoreCard({
+  store,
+  keyword = "",
+  area = "すべて",
+  activeTags = [],
+}: {
+  store: Store;
+  keyword?: string;
+  area?: string;
+  activeTags?: string[];
+}) {
+  const queryParams = new URLSearchParams();
+  if (keyword) queryParams.set("keyword", keyword);
+  if (area && area !== "すべて") queryParams.set("area", area);
+  if (activeTags.length > 0) queryParams.set("tags", activeTags.join(","));
+  const queryString = queryParams.toString();
+  const href = `/store/${store.id}${queryString ? `?${queryString}` : ""}`;
+
   return (
     <Link
-      href={`/store/${store.id}`}
+      href={href}
       className="group relative block overflow-hidden rounded-[28px] bg-white/80 shadow-[0_6px_20px_-8px_rgba(74,54,46,0.25)] ring-1 ring-umber/5 transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_14px_28px_-10px_rgba(193,95,66,0.35)]"
     >
       {/* signature: folded paper-bag corner, echoes the onigiri/paper-wrap motif */}
