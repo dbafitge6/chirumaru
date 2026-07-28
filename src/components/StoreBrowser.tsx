@@ -25,8 +25,6 @@ export default function StoreBrowser({
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
-  const filterRef = useRef<HTMLDivElement>(null);
-  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // キーワード検索の debounce
@@ -41,34 +39,6 @@ export default function StoreBrowser({
     debouncedSearch();
   }, [keyword, area, activeTags, debouncedSearch]);
 
-  // スクロール時のフィルターバー隠し（state ではなく CSS で制御）
-  useEffect(() => {
-    let lastScrollTime = 0;
-    const handleScroll = () => {
-      const now = Date.now();
-      if (now - lastScrollTime < 200) return;
-      lastScrollTime = now;
-
-      if (filterRef.current) {
-        filterRef.current.style.opacity = "0";
-        filterRef.current.style.pointerEvents = "none";
-      }
-
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-      scrollTimeout.current = setTimeout(() => {
-        if (filterRef.current) {
-          filterRef.current.style.opacity = "1";
-          filterRef.current.style.pointerEvents = "auto";
-        }
-      }, 1000);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    };
-  }, []);
 
   const loadStores = useCallback(async (offset: number) => {
     setLoading(true);
@@ -104,11 +74,7 @@ export default function StoreBrowser({
 
   return (
     <div>
-      <div
-        ref={filterRef}
-        className="sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md transition-opacity duration-300 sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm"
-        style={{ opacity: 1, pointerEvents: "auto" }}
-      >
+      <div className="sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <input
