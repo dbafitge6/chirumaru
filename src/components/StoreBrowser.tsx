@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import type { Store } from "@/lib/types";
 import StoreCard from "./StoreCard";
 
@@ -11,49 +11,81 @@ const GENRE_TAGS = [
   "レストラン・食堂",
 ];
 
-export default function StoreBrowser({ stores }: { stores: Store[] }) {
+export default function StoreBrowser({
+  areas,
+  featureTags,
+}: {
+  areas: string[];
+  featureTags: string[];
+}) {
   const [keyword, setKeyword] = useState("");
   const [area, setArea] = useState("すべて");
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [showFilter, setShowFilter] = useState(true);
+  const [stores, setStores] = useState<Store[]>([]);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loading, setLoading] = useState(false);
   const scrollTimeout = useRef<NodeJS.Timeout>();
+  const debounceTimeout = useRef<NodeJS.Timeout>();
+
+  // キーワード検索の debounce
+  const debouncedSearch = useCallback(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      loadStores(0);
+    }, 300);
+  }, []);
 
   useEffect(() => {
+    debouncedSearch();
+  }, [keyword, area, activeTags, debouncedSearch]);
+
+  // スクロール時のフィルターバー隠し
+  useEffect(() => {
+    let lastScrollTime = 0;
     const handleScroll = () => {
-      setShowFilter(false); // スクロール中は隠す
+      const now = Date.now();
+      if (now - lastScrollTime < 200) return;
+      lastScrollTime = now;
 
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
-
-      scrollTimeout.current = setTimeout(() => {
-        setShowFilter(true); // 1秒後に表示
-      }, 1000);
+      setShowFilter(false);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(() => setShowFilter(true), 1000);
     };
 
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
       window.removeEventListener("scroll", handleScroll);
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     };
   }, []);
 
-  const areas = useMemo(() => {
-    const set = new Set(stores.map((s) => s.area).filter(Boolean));
-    return ["すべて", ...Array.from(set).sort()];
-  }, [stores]);
+  async function loadStores(offset: number) {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (keyword) params.set("keyword", keyword);
+      if (area && area !== "すべて") params.set("area", area);
+      if (activeTags.length > 0) params.set("tags", activeTags.join(","));
+      params.set("offset", offset.toString());
 
-  const featureTags = useMemo(() => {
-    const set = new Set<string>();
-    stores.forEach((s) =>
-      s.tags.forEach((t) => {
-        if (!GENRE_TAGS.includes(t)) set.add(t);
-      })
-    );
-    return Array.from(set).sort().slice(0, 15);
-  }, [stores]);
+      const res = await fetch(`/api/stores?${params}`);
+      const data = await res.json();
+
+      if (offset === 0) {
+        setStores(data.items);
+      } else {
+        setStores((prev) => [...prev, ...data.items]);
+      }
+      setTotal(data.total);
+      setHasMore(data.hasMore);
+    } catch (error) {
+      console.error("Failed to load stores:", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   function toggleTag(tag: string) {
     setActiveTags((prev) =>
@@ -61,28 +93,10 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
     );
   }
 
-  const filtered = useMemo(() => {
-    const kw = keyword.trim().toLowerCase();
-    return stores.filter((s) => {
-      if (area !== "すべて" && s.area !== area) return false;
-      if (activeTags.length > 0 && !activeTags.every((t) => s.tags.includes(t)))
-        return false;
-      if (kw) {
-        const haystack = `${s.name} ${s.memo} ${s.menu} ${s.tags.join(" ")}`.toLowerCase();
-        if (!haystack.includes(kw)) return false;
-      }
-      return true;
-    });
-  }, [stores, keyword, area, activeTags]);
-
   return (
     <div>
-      {/* Filter bar */}
-      <div
-        className={`sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm transition-all duration-300 ${
-          showFilter ? "" : "hidden"
-        }`}
-      >
+      {showFilter && (
+      <div className="sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <input
@@ -91,6 +105,7 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
               onChange={(e) => setKeyword(e.target.value)}
               placeholder="お店の名前やメニューで探す"
               className="w-full rounded-full border border-umber/15 bg-white px-5 py-2.5 text-base text-umber placeholder:text-umber/40 focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/30"
+              style={{ WebkitAppearance: "none", appearance: "none" }}
             />
           </div>
           <select
@@ -125,27 +140,42 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
           })}
         </div>
       </div>
+      )}
 
       <p className="mb-4 px-1 text-sm text-umber/60">
-        {filtered.length}件のお店が見つかりました
+        {total}件のお店が見つかりました
       </p>
 
-      {filtered.length === 0 ? (
+      {total === 0 ? (
         <div className="rounded-3xl border border-dashed border-umber/20 bg-white/50 py-16 text-center text-umber/50">
           条件に合うお店が見つかりませんでした。キーワードや絞り込みを変えてみてください。
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 pb-16 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((store) => (
-            <StoreCard
-              key={store.id}
-              store={store}
-              keyword={keyword}
-              area={area}
-              activeTags={activeTags}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-5 pb-16 sm:grid-cols-2 lg:grid-cols-3">
+            {stores.map((store) => (
+              <StoreCard
+                key={store.id}
+                store={store}
+                keyword={keyword}
+                area={area}
+                activeTags={activeTags}
+              />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="text-center pb-16">
+              <button
+                onClick={() => loadStores(stores.length)}
+                disabled={loading}
+                className="rounded-full bg-terracotta px-6 py-2.5 text-sm font-medium text-white hover:bg-clay disabled:opacity-50"
+              >
+                {loading ? "読み込み中..." : "もっと見る"}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
