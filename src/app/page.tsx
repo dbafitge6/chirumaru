@@ -3,6 +3,13 @@ import StoreBrowser from "@/components/StoreBrowser";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 
+const GENRE_TAGS = [
+  "カフェ",
+  "パン屋・ベーカリー",
+  "スイーツ・洋菓子店",
+  "レストラン・食堂",
+];
+
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
@@ -13,6 +20,18 @@ export default async function HomePage() {
   } catch (e) {
     loadError = e instanceof Error ? e.message : "不明なエラーが発生しました";
   }
+
+  // エリア一覧を生成
+  const areas = ["すべて", ...Array.from(new Set(stores.map((s) => s.area).filter(Boolean))).sort()];
+
+  // タグ一覧を生成（最大15個）
+  const tagSet = new Set<string>();
+  stores.forEach((s) =>
+    s.tags.forEach((t) => {
+      if (!GENRE_TAGS.includes(t)) tagSet.add(t);
+    })
+  );
+  const featureTags = Array.from(tagSet).sort().slice(0, 15);
 
   return (
     <>
@@ -48,12 +67,10 @@ export default async function HomePage() {
           {loadError ? (
             <div className="rounded-3xl border border-dashed border-clay/30 bg-white/60 p-8 text-sm text-clay">
               お店の情報を読み込めませんでした。環境変数 AIRTABLE_API_KEY
-              が設定されているか確認してください。
-              <br />
-              <span className="text-umber/50">({loadError})</span>
+              が正しく設定されているか確認してください。
             </div>
           ) : (
-            <StoreBrowser stores={stores} />
+            <StoreBrowser areas={areas} featureTags={featureTags} />
           )}
         </section>
       </main>
