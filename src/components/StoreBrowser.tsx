@@ -26,8 +26,8 @@ export default function StoreBrowser({
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
-  const scrollTimeout = useRef<NodeJS.Timeout>();
-  const debounceTimeout = useRef<NodeJS.Timeout>();
+  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // キーワード検索の debounce
   const debouncedSearch = useCallback(() => {
