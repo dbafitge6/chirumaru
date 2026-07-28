@@ -79,7 +79,7 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               placeholder="お店の名前やメニューで探す"
-              className="w-full rounded-full border border-umber/15 bg-white px-5 py-2.5 text-sm text-umber placeholder:text-umber/40 focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/30"
+              className="w-full rounded-full border border-umber/15 bg-white px-5 py-2.5 text-base text-umber placeholder:text-umber/40 focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/30"
             />
           </div>
           <select
