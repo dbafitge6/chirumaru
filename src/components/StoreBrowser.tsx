@@ -25,6 +25,7 @@ export default function StoreBrowser({
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showFilter, setShowFilter] = useState(true);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const loadStores = useCallback(async (offset: number) => {
@@ -68,6 +69,16 @@ export default function StoreBrowser({
 
   return (
     <div>
+      {/* Toggle button */}
+      <button
+        onClick={() => setShowFilter(!showFilter)}
+        className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors"
+        title={showFilter ? "フィルターを隠す" : "フィルターを表示"}
+      >
+        {showFilter ? "✕" : "🔍"}
+      </button>
+
+      {showFilter && (
       <div className="sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
@@ -112,6 +123,7 @@ export default function StoreBrowser({
           })}
         </div>
       </div>
+      )}
 
       <p className="mb-4 px-1 text-sm text-umber/60">
         {total}件のお店が見つかりました
