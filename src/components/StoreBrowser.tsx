@@ -27,17 +27,12 @@ export default function StoreBrowser({
   const [loading, setLoading] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // キーワード検索の debounce
-  const debouncedSearch = useCallback(() => {
+  useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
       loadStores(0);
-    }, 300);
-  }, []);
-
-  useEffect(() => {
-    debouncedSearch();
-  }, [keyword, area, activeTags, debouncedSearch]);
+    }, keyword ? 300 : 0);
+  }, [keyword, area, activeTags, loadStores]);
 
 
   const loadStores = useCallback(async (offset: number) => {
