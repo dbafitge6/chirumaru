@@ -70,7 +70,7 @@ export default function StoreBrowser({
     };
   }, []);
 
-  async function loadStores(offset: number) {
+  const loadStores = useCallback(async (offset: number) => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -94,7 +94,7 @@ export default function StoreBrowser({
     } finally {
       setLoading(false);
     }
-  }
+  }, [keyword, area, activeTags]);
 
   function toggleTag(tag: string) {
     setActiveTags((prev) =>

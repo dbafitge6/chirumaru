@@ -1,7 +1,8 @@
 import Link from "next/link";
 import type { Store } from "@/lib/types";
+import { memo } from "react";
 
-export default function StoreCard({
+function StoreCard({
   store,
   keyword = "",
   area = "すべて",
@@ -80,3 +81,5 @@ export default function StoreCard({
     </Link>
   );
 }
+
+export default memo(StoreCard);
