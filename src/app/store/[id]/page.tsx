@@ -8,11 +8,25 @@ export const dynamic = "force-dynamic";
 
 export default async function StorePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { id } = await params;
-  const result = await getStoreWithNeighbors(id).catch(() => null);
+  const query = await searchParams;
+
+  // Extract filter parameters from URL query string
+  const keyword = typeof query.keyword === "string" ? query.keyword : undefined;
+  const area = typeof query.area === "string" ? query.area : undefined;
+  const tagsParam = typeof query.tags === "string" ? query.tags : undefined;
+  const tags = tagsParam ? tagsParam.split(",").filter(Boolean) : undefined;
+
+  const result = await getStoreWithNeighbors(id, {
+    keyword,
+    area: area && area !== "すべて" ? area : undefined,
+    tags,
+  }).catch(() => null);
   if (!result) notFound();
   const { store, prevId, nextId } = result;
 
@@ -36,7 +50,7 @@ export default async function StorePage({
           <div className="flex items-center justify-between gap-2">
             {prevId ? (
               <Link
-                href={`/store/${prevId}`}
+                href={`/store/${prevId}?keyword=${encodeURIComponent(keyword || "")}&area=${encodeURIComponent(area || "")}&tags=${encodeURIComponent(tags?.join(",") || "")}`}
                 className="inline-flex items-center gap-1 rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:border-terracotta/50 hover:text-clay"
               >
                 ← 前へ
@@ -56,7 +70,7 @@ export default async function StorePage({
 
             {nextId ? (
               <Link
-                href={`/store/${nextId}`}
+                href={`/store/${nextId}?keyword=${encodeURIComponent(keyword || "")}&area=${encodeURIComponent(area || "")}&tags=${encodeURIComponent(tags?.join(",") || "")}`}
                 className="inline-flex items-center gap-1 rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:border-terracotta/50 hover:text-clay"
               >
                 次へ →
