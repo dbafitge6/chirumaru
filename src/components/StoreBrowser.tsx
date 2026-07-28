@@ -27,14 +27,6 @@ export default function StoreBrowser({
   const [loading, setLoading] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-    debounceTimeout.current = setTimeout(() => {
-      loadStores(0);
-    }, keyword ? 300 : 0);
-  }, [keyword, area, activeTags, loadStores]);
-
-
   const loadStores = useCallback(async (offset: number) => {
     setLoading(true);
     try {
@@ -60,6 +52,13 @@ export default function StoreBrowser({
       setLoading(false);
     }
   }, [keyword, area, activeTags]);
+
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      loadStores(0);
+    }, keyword ? 300 : 0);
+  }, [keyword, area, activeTags, loadStores]);
 
   function toggleTag(tag: string) {
     setActiveTags((prev) =>
