@@ -16,17 +16,28 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
   const [area, setArea] = useState("すべて");
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [showFilter, setShowFilter] = useState(true);
-  const lastScrollY = useRef(0);
+  const scrollTimeout = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      setShowFilter(currentScrollY < lastScrollY.current || currentScrollY < 100);
-      lastScrollY.current = currentScrollY;
+      setShowFilter(false); // スクロール中は隠す
+
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+
+      scrollTimeout.current = setTimeout(() => {
+        setShowFilter(true); // 1秒後に表示
+      }, 1000);
     };
 
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (scrollTimeout.current) {
+        clearTimeout(scrollTimeout.current);
+      }
+    };
   }, []);
 
   const areas = useMemo(() => {
