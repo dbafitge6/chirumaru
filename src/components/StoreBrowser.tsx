@@ -135,7 +135,7 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
           条件に合うお店が見つかりませんでした。キーワードや絞り込みを変えてみてください。
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 pb-16 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((store) => (
             <StoreCard
               key={store.id}
