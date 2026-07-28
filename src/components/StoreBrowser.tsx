@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import type { Store } from "@/lib/types";
 import StoreCard from "./StoreCard";
 
@@ -15,6 +15,19 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
   const [keyword, setKeyword] = useState("");
   const [area, setArea] = useState("すべて");
   const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [showFilter, setShowFilter] = useState(true);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      setShowFilter(currentScrollY < lastScrollY.current || currentScrollY < 100);
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const areas = useMemo(() => {
     const set = new Set(stores.map((s) => s.area).filter(Boolean));
@@ -28,7 +41,7 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
         if (!GENRE_TAGS.includes(t)) set.add(t);
       })
     );
-    return Array.from(set).sort();
+    return Array.from(set).sort().slice(0, 15);
   }, [stores]);
 
   function toggleTag(tag: string) {
@@ -54,7 +67,11 @@ export default function StoreBrowser({ stores }: { stores: Store[] }) {
   return (
     <div>
       {/* Filter bar */}
-      <div className="sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
+      <div
+        className={`sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm transition-all duration-300 ${
+          showFilter ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0 pointer-events-none"
+        }`}
+      >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <input
