@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "ちるまる | 新潟のカフェ・パン屋・スイーツ探し",
   description:
     "新潟県内のカフェ・パン屋・スイーツ店・喫茶店をエリアやタグでゆるっと探せるお店探しサイト、ちるまる。",
+  verification: {
+    google: "6gzZczlUj82BlA_D4Ycm23OSp-ocUJTpBfpnVrXJqZc",
+  },
 };
 
 export default function RootLayout({
