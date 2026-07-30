@@ -1,6 +1,8 @@
+'use client';
+
 import Link from "next/link";
 import type { Store } from "@/lib/types";
-import { memo } from "react";
+import { memo, useState, useEffect } from "react";
 
 function StoreCard({
   store,
@@ -13,6 +15,48 @@ function StoreCard({
   area?: string;
   activeTags?: string[];
 }) {
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [distance, setDistance] = useState<number | null>(null);
+
+  useEffect(() => {
+    // 초기 로드: localStorage에서 즐겨찾기 확인
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    setIsFavorite(favorites.includes(store.id));
+
+    // 현재 위치에서 거리 계산
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // 간단한 거리 계산 (실제로는 Geocoding이 필요하지만, 테스트용)
+          calculateDistance(latitude, longitude, store.address);
+        },
+        (error) => {
+          console.log('위치 허용 안함:', error);
+        }
+      );
+    }
+  }, [store.id, store.address]);
+
+  const calculateDistance = async (lat: number, lng: number, address: string) => {
+    // 주소에서 좌표를 가져오는 방법 (실제 API 필요)
+    // 현재는 시뮬레이션
+    const distKm = Math.random() * 10; // 0-10km 임시값
+    setDistance(parseFloat(distKm.toFixed(1)));
+  };
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
+    if (isFavorite) {
+      const filtered = favorites.filter((id: string) => id !== store.id);
+      localStorage.setItem('favorites', JSON.stringify(filtered));
+    } else {
+      favorites.push(store.id);
+      localStorage.setItem('favorites', JSON.stringify(favorites));
+    }
+    setIsFavorite(!isFavorite);
+  };
   const queryParams = new URLSearchParams();
   if (keyword) queryParams.set("keyword", keyword);
   if (area && area !== "すべて") queryParams.set("area", area);
@@ -37,6 +81,17 @@ function StoreCard({
         style={{ clipPath: "polygon(100% 0, 45% 0, 100% 55%)" }}
       />
 
+      {/* お気に入いボタン */}
+      <button
+        onClick={toggleFavorite}
+        className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+        title={isFavorite ? 'お気に入いから削除' : 'お気に入いに追加'}
+      >
+        <span className={`text-lg ${isFavorite ? '❤️' : '🤍'}`}>
+          {isFavorite ? '❤️' : '🤍'}
+        </span>
+      </button>
+
       <div className="relative h-40 w-full overflow-hidden bg-gradient-to-br from-blush to-sand">
         {store.photoUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -58,9 +113,16 @@ function StoreCard({
       </div>
 
       <div className="p-4">
-        <h3 className="font-display text-lg font-bold leading-snug text-umber">
-          {store.name}
-        </h3>
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-display text-lg font-bold leading-snug text-umber flex-1">
+            {store.name}
+          </h3>
+          {distance !== null && (
+            <span className="whitespace-nowrap text-xs font-medium text-terracotta bg-terracotta/10 px-2 py-1 rounded-full">
+              {distance}km
+            </span>
+          )}
+        </div>
         {store.memo && (
           <p className="mt-1 line-clamp-2 text-sm text-umber/70">{store.memo}</p>
         )}

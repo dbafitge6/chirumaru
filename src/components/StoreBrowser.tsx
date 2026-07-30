@@ -26,7 +26,14 @@ export default function StoreBrowser({
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showFilter, setShowFilter] = useState(true);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const saved = JSON.parse(localStorage.getItem('favorites') || '[]');
+    setFavorites(saved);
+  }, []);
 
   const loadStores = useCallback(async (offset: number) => {
     setLoading(true);
@@ -125,18 +132,30 @@ export default function StoreBrowser({
       </div>
       )}
 
-      <p className="mb-4 px-1 text-sm text-umber/60">
-        {total}件のお店が見つかりました
-      </p>
+      <div className="mb-4 flex items-center justify-between px-1">
+        <p className="text-sm text-umber/60">
+          {showFavoritesOnly ? `${favorites.filter(id => stores.some(s => s.id === id)).length}件のお気に入い` : `${total}件のお店が見つかりました`}
+        </p>
+        <button
+          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+            showFavoritesOnly
+              ? 'bg-terracotta text-white'
+              : 'border border-umber/15 bg-white text-umber/70 hover:border-terracotta/50'
+          }`}
+        >
+          {showFavoritesOnly ? '❤️ お気に入いのみ' : '🤍 すべて'}
+        </button>
+      </div>
 
-      {total === 0 ? (
+      {(showFavoritesOnly ? favorites.filter(id => stores.some(s => s.id === id)).length === 0 : total === 0) ? (
         <div className="rounded-3xl border border-dashed border-umber/20 bg-white/50 py-16 text-center text-umber/50">
           条件に合うお店が見つかりませんでした。キーワードや絞り込みを変えてみてください。
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 gap-5 pb-16 sm:grid-cols-2 lg:grid-cols-3">
-            {stores.map((store) => (
+            {(showFavoritesOnly ? stores.filter(s => favorites.includes(s.id)) : stores).map((store) => (
               <StoreCard
                 key={store.id}
                 store={store}
