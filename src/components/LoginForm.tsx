@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { GoogleLogin } from '@react-oauth/google';
 
 const DEFAULT_USERS = {
   'test@example.com': 'password123',
@@ -130,6 +131,29 @@ export default function LoginForm() {
             : 'アカウント作成はこちら'}
         </button>
       </div>
+
+      {!isSignUp && (
+        <div className="mt-6 border-t pt-6">
+          <p className="text-center text-sm text-umber/60 mb-4">または</p>
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={(credentialResponse) => {
+                if (credentialResponse.credential) {
+                  // Decode JWT token to get email
+                  const token = credentialResponse.credential;
+                  const payload = JSON.parse(atob(token.split('.')[1]));
+                  localStorage.setItem('userId', `google_${payload.sub}`);
+                  localStorage.setItem('userEmail', payload.email);
+                  router.push('/');
+                }
+              }}
+              onError={() => {
+                setError('Google ログインに失敗しました');
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
