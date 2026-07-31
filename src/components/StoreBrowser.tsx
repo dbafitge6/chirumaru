@@ -22,6 +22,7 @@ export default function StoreBrowser({
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [menus, setMenus] = useState<string[]>([]);
+  const [showFilterButton, setShowFilterButton] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -42,6 +43,16 @@ export default function StoreBrowser({
       }
     };
     fetchTags();
+  }, []);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // ヘッダーが消える（約60px以上スクロール）でバツボタン表示
+      setShowFilterButton(window.scrollY > 60);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const loadStores = useCallback(async (offset: number) => {
@@ -85,14 +96,16 @@ export default function StoreBrowser({
 
   return (
     <div>
-      {/* Toggle button */}
-      <button
-        onClick={() => setShowFilter(!showFilter)}
-        className="fixed left-4 bottom-4 sm:right-4 sm:bottom-auto sm:top-24 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors"
-        title={showFilter ? "フィルターを隠す" : "フィルターを表示"}
-      >
-        {showFilter ? "✕" : "🔍"}
-      </button>
+      {/* Toggle button - 表示はスクロール時のみ */}
+      {showFilterButton && (
+        <button
+          onClick={() => setShowFilter(!showFilter)}
+          className="fixed right-4 top-4 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors"
+          title={showFilter ? "フィルターを隠す" : "フィルターを表示"}
+        >
+          {showFilter ? "✕" : "🔍"}
+        </button>
+      )}
 
       {showFilter && (
       <div className="sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
