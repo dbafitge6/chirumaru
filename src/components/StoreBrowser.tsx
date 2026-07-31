@@ -85,17 +85,17 @@ export default function StoreBrowser({
 
   return (
     <div>
-      {/* Toggle button */}
+      {/* Toggle button - ヘッダー下の右側 */}
       <button
         onClick={() => setShowFilter(!showFilter)}
-        className="fixed left-4 bottom-4 sm:right-4 sm:bottom-auto sm:top-20 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors"
+        className="fixed right-4 top-16 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors sm:block"
         title={showFilter ? "フィルターを隠す" : "フィルターを表示"}
       >
         {showFilter ? "✕" : "🔍"}
       </button>
 
       {showFilter && (
-      <div className="sticky top-0 z-20 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
+      <div className="sticky top-0 z-50 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
             <input
