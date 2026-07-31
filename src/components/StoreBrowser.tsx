@@ -88,7 +88,7 @@ export default function StoreBrowser({
       {/* Toggle button - ヘッダー下の右側 */}
       <button
         onClick={() => setShowFilter(!showFilter)}
-        className="fixed right-4 top-20 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors sm:block"
+        className="fixed right-4 top-20 z-[9999] flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors sm:block"
         title={showFilter ? "フィルターを隠す" : "フィルターを表示"}
       >
         {showFilter ? "✕" : "🔍"}
