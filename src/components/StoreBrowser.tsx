@@ -34,9 +34,11 @@ export default function StoreBrowser({
       try {
         const res = await fetch("/api/tags");
         const data = await res.json();
+        console.log("Fetched tags:", data);
         setMenus(data.menus || []);
       } catch (error) {
         console.error("Failed to fetch tags:", error);
+        setMenus([]);
       }
     };
     fetchTags();
@@ -86,7 +88,7 @@ export default function StoreBrowser({
       {/* Toggle button */}
       <button
         onClick={() => setShowFilter(!showFilter)}
-        className="fixed right-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors"
+        className="fixed left-4 bottom-4 sm:right-4 sm:bottom-auto sm:top-20 z-40 flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors"
         title={showFilter ? "フィルターを隠す" : "フィルターを表示"}
       >
         {showFilter ? "✕" : "🔍"}
