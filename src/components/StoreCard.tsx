@@ -9,41 +9,20 @@ function StoreCard({
   keyword = "",
   area = "すべて",
   activeTags = [],
+  distance,
 }: {
   store: Store;
   keyword?: string;
   area?: string;
   activeTags?: string[];
+  distance?: number;
 }) {
   const [isFavorite, setIsFavorite] = useState(false);
-  const [distance, setDistance] = useState<number | null>(null);
 
   useEffect(() => {
-    // 초기 로드: localStorage에서 즐겨찾기 확인
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     setIsFavorite(favorites.includes(store.id));
-
-    // 현재 위치에서 거리 계산
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          // 간단한 거리 계산 (실제로는 Geocoding이 필요하지만, 테스트용)
-          calculateDistance(latitude, longitude, store.address);
-        },
-        (error) => {
-          console.log('위치 허용 안함:', error);
-        }
-      );
-    }
-  }, [store.id, store.address]);
-
-  const calculateDistance = async (lat: number, lng: number, address: string) => {
-    // 주소에서 좌표를 가져오는 방법 (실제 API 필요)
-    // 현재는 시뮬레이션
-    const distKm = Math.random() * 10; // 0-10km 임시값
-    setDistance(parseFloat(distKm.toFixed(1)));
-  };
+  }, [store.id]);
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -117,9 +96,9 @@ function StoreCard({
           <h3 className="font-display text-lg font-bold leading-snug text-umber flex-1">
             {store.name}
           </h3>
-          {distance !== null && (
+          {distance !== undefined && distance !== Infinity && (
             <span className="whitespace-nowrap text-xs font-medium text-terracotta bg-terracotta/10 px-2 py-1 rounded-full">
-              {distance}km
+              {distance.toFixed(1)}km
             </span>
           )}
         </div>

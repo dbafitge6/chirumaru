@@ -48,9 +48,16 @@ export default function SiteHeader() {
         </span>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/account"
+            className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-terracotta/10 transition-colors"
+            title="アカウント・お気に入い"
+          >
+            ❤️
+          </Link>
           {userId ? (
             <>
-              <span className="text-sm text-umber">{userEmail}</span>
+              <span className="hidden text-sm text-umber sm:inline">{userEmail}</span>
               <button
                 onClick={handleLogout}
                 className="rounded-lg bg-clay/10 px-3 py-2 text-sm font-medium text-clay hover:bg-clay/20"

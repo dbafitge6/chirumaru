@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import type { Store } from "@/lib/types";
 import StoreCard from "./StoreCard";
+import { getGeolocation, calculateDistance } from "@/lib/geolocation";
 
 export default function StoreBrowser({
   areas,
@@ -22,6 +23,10 @@ export default function StoreBrowser({
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [menus, setMenus] = useState<string[]>([]);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
+  const [useNearby, setUseNearby] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+  const [distanceMap, setDistanceMap] = useState<Record<string, number>>({});
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -75,12 +80,33 @@ export default function StoreBrowser({
     debounceTimeout.current = setTimeout(() => {
       loadStores(0);
     }, keyword ? 300 : 0);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
   }, [keyword, area, activeTags, loadStores]);
 
   function toggleTag(tag: string) {
     setActiveTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
+  }
+
+  async function handleRequestLocation() {
+    setLocationError(null);
+    try {
+      const coords = await getGeolocation();
+      setUserLocation({ lat: coords.latitude, lon: coords.longitude });
+      setUseNearby(true);
+    } catch (error) {
+      setLocationError(error instanceof Error ? error.message : "位置情報取得に失敗しました");
+    }
+  }
+
+  function handleClearLocation() {
+    setUserLocation(null);
+    setUseNearby(false);
+    setLocationError(null);
+    setDistanceMap({});
   }
 
   return (
@@ -141,21 +167,49 @@ export default function StoreBrowser({
       </div>
       )}
 
-      <div className="mb-4 flex items-center justify-between px-1">
-        <p className="text-sm text-umber/60">
-          {showFavoritesOnly ? `${favorites.filter(id => stores.some(s => s.id === id)).length}件のお気に入い` : `${total}件のお店が見つかりました`}
-        </p>
-        <button
-          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-          className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-            showFavoritesOnly
-              ? 'bg-terracotta text-white'
-              : 'border border-umber/15 bg-white text-umber/70 hover:border-terracotta/50'
-          }`}
-        >
-          {showFavoritesOnly ? '❤️ お気に入いのみ' : '🤍 すべて'}
-        </button>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm text-umber/60">
+            {showFavoritesOnly ? `${favorites.filter(id => stores.some(s => s.id === id)).length}件のお気に入い` : `${total}件のお店が見つかりました`}
+          </p>
+          {userLocation && (
+            <p className="text-xs text-terracotta">📍 現在地周辺を表示中</p>
+          )}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {!userLocation ? (
+            <button
+              onClick={handleRequestLocation}
+              className="rounded-full border border-umber/15 bg-white px-3 py-1.5 text-xs font-medium text-umber/70 hover:border-terracotta/50 transition-colors"
+            >
+              📍 近くのお店を表示
+            </button>
+          ) : (
+            <button
+              onClick={handleClearLocation}
+              className="rounded-full border border-terracotta bg-terracotta/10 px-3 py-1.5 text-xs font-medium text-terracotta hover:bg-terracotta/20 transition-colors"
+            >
+              ✕ 現在地をクリア
+            </button>
+          )}
+          <button
+            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
+              showFavoritesOnly
+                ? 'bg-terracotta text-white'
+                : 'border border-umber/15 bg-white text-umber/70 hover:border-terracotta/50'
+            }`}
+          >
+            {showFavoritesOnly ? '❤️ お気に入いのみ' : '🤍 すべて'}
+          </button>
+        </div>
       </div>
+
+      {locationError && (
+        <div className="mb-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+          {locationError}
+        </div>
+      )}
 
       {(showFavoritesOnly ? favorites.filter(id => stores.some(s => s.id === id)).length === 0 : total === 0) ? (
         <div className="rounded-3xl border border-dashed border-umber/20 bg-white/50 py-16 text-center text-umber/50">
@@ -164,15 +218,35 @@ export default function StoreBrowser({
       ) : (
         <>
           <div className="grid grid-cols-1 gap-5 pb-16 sm:grid-cols-2 lg:grid-cols-3">
-            {(showFavoritesOnly ? stores.filter(s => favorites.includes(s.id)) : stores).map((store) => (
-              <StoreCard
-                key={store.id}
-                store={store}
-                keyword={keyword}
-                area={area}
-                activeTags={activeTags}
-              />
-            ))}
+            {(() => {
+              let displayStores = showFavoritesOnly ? stores.filter(s => favorites.includes(s.id)) : stores;
+              if (useNearby && userLocation) {
+                const newDistanceMap: Record<string, number> = {};
+                displayStores = displayStores
+                  .map(store => {
+                    const distance = store.latitude && store.longitude
+                      ? calculateDistance(userLocation.lat, userLocation.lon, store.latitude, store.longitude)
+                      : Infinity;
+                    newDistanceMap[store.id] = distance;
+                    return { store, distance };
+                  })
+                  .sort((a, b) => a.distance - b.distance)
+                  .map(({ store }) => store);
+                setDistanceMap(newDistanceMap);
+              } else {
+                setDistanceMap({});
+              }
+              return displayStores.map((store) => (
+                <StoreCard
+                  key={store.id}
+                  store={store}
+                  keyword={keyword}
+                  area={area}
+                  activeTags={activeTags}
+                  distance={distanceMap[store.id]}
+                />
+              ));
+            })()}
           </div>
 
           {hasMore && (
