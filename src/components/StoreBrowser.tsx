@@ -4,13 +4,6 @@ import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import type { Store } from "@/lib/types";
 import StoreCard from "./StoreCard";
 
-const GENRE_TAGS = [
-  "カフェ",
-  "パン屋・ベーカリー",
-  "スイーツ・洋菓子店",
-  "レストラン・食堂",
-];
-
 export default function StoreBrowser({
   areas,
   featureTags,
@@ -28,11 +21,25 @@ export default function StoreBrowser({
   const [showFilter, setShowFilter] = useState(true);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [menus, setMenus] = useState<string[]>([]);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('favorites') || '[]');
     setFavorites(saved);
+  }, []);
+
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const res = await fetch("/api/tags");
+        const data = await res.json();
+        setMenus(data.menus || []);
+      } catch (error) {
+        console.error("Failed to fetch tags:", error);
+      }
+    };
+    fetchTags();
   }, []);
 
   const loadStores = useCallback(async (offset: number) => {
@@ -112,7 +119,7 @@ export default function StoreBrowser({
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
-          {featureTags.map((tag) => {
+          {menus.map((tag) => {
             const active = activeTags.includes(tag);
             return (
               <button
