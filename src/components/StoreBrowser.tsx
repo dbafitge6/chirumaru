@@ -192,16 +192,14 @@ export default function StoreBrowser({
               ✕ 現在地をクリア
             </button>
           )}
-          <button
-            onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-              showFavoritesOnly
-                ? 'bg-terracotta text-white'
-                : 'border border-umber/15 bg-white text-umber/70 hover:border-terracotta/50'
-            }`}
-          >
-            {showFavoritesOnly ? '❤️ お気に入いのみ' : '🤍 すべて'}
-          </button>
+          {showFavoritesOnly && (
+            <button
+              onClick={() => setShowFavoritesOnly(false)}
+              className="rounded-full bg-terracotta px-3 py-1.5 text-xs font-medium text-white hover:bg-clay transition-colors"
+            >
+              ❤️ お気に入いのみ ✕
+            </button>
+          )}
         </div>
       </div>
 
