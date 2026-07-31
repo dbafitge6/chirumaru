@@ -13,6 +13,8 @@ export type Store = {
   memo: string;
   menu: string;
   updatedAt: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 export type StoreFilters = {

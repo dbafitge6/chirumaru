@@ -48,6 +48,8 @@ function toStore(record: AirtableRecord): Store {
     memo: f["一言メモ"] ?? "",
     menu: f["メニュー"] ?? "",
     updatedAt: f["情報更新日"] ?? "",
+    latitude: f["Latitude"] ? parseFloat(f["Latitude"]) : undefined,
+    longitude: f["Longitude"] ? parseFloat(f["Longitude"]) : undefined,
   };
 }
 
