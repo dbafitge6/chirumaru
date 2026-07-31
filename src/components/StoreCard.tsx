@@ -84,7 +84,7 @@ function StoreCard({
       {/* お気に入いボタン */}
       <button
         onClick={toggleFavorite}
-        className="absolute right-3 top-3 z-20 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
+        className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
         title={isFavorite ? 'お気に入いから削除' : 'お気に入いに追加'}
       >
         <span className={`text-lg ${isFavorite ? '❤️' : '🤍'}`}>
