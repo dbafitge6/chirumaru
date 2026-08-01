@@ -111,7 +111,7 @@ function StoreCard({
             {store.tags.slice(0, 4).map((tag) => (
               <li
                 key={tag}
-                className="rounded-full bg-sand px-2.5 py-1 text-[11px] font-medium text-clay"
+                className="rounded-full bg-sand px-2 py-0.5 text-[10px] font-medium text-clay"
               >
                 {tag}
               </li>
