@@ -33,8 +33,9 @@ export async function GET() {
       }
     });
 
-    // 使用頻度が高い順にソートして、上位15タグを取得
+    // 2つ以上の店舗で使用されているタグのみを抽出（特定の店舗のメニュー項目は除外）
     const menus = Array.from(tagCounts.entries())
+      .filter(([_, count]) => count >= 2)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 15)
       .map(([tag]) => tag);

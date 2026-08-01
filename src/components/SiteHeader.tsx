@@ -29,9 +29,9 @@ export default function SiteHeader() {
           <Link
             href="/account"
             className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-terracotta/10 transition-colors"
-            title="アカウント・お気に入い"
+            title="アカウント"
           >
-            ❤️
+            👤
           </Link>
         </div>
       </div>

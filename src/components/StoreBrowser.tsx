@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import type { Store } from "@/lib/types";
 import StoreCard from "./StoreCard";
 import { getGeolocation, calculateDistance } from "@/lib/geolocation";
@@ -26,7 +27,22 @@ export default function StoreBrowser({
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [useNearby, setUseNearby] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
-  const [distanceMap, setDistanceMap] = useState<Record<string, number>>({});
+  const distanceMap = useMemo(() => {
+    if (!useNearby || !userLocation) return {};
+    const map: Record<string, number> = {};
+    stores.forEach(store => {
+      if (store.latitude && store.longitude) {
+        map[store.id] = calculateDistance(
+          userLocation.lat,
+          userLocation.lon,
+          store.latitude,
+          store.longitude
+        );
+      }
+    });
+    return map;
+  }, [useNearby, userLocation, stores]);
+
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -106,7 +122,6 @@ export default function StoreBrowser({
     setUserLocation(null);
     setUseNearby(false);
     setLocationError(null);
-    setDistanceMap({});
   }
 
   return (
@@ -146,8 +161,8 @@ export default function StoreBrowser({
           </select>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
-          {menus.map((tag) => {
+        <div className="mt-3 grid grid-cols-2 gap-2">
+          {menus.slice(0, 10).map((tag) => {
             const active = activeTags.includes(tag);
             return (
               <button
@@ -164,13 +179,26 @@ export default function StoreBrowser({
             );
           })}
         </div>
+
+        <div className="mt-4 rounded-lg border border-terracotta/20 bg-terracotta/5 p-4">
+          <Link
+            href="/nearby"
+            className="flex items-center justify-between gap-2 font-medium text-terracotta hover:text-clay transition-colors"
+          >
+            <span>📍 現在地周辺を検索</span>
+            <span>→</span>
+          </Link>
+          <p className="mt-1 text-xs text-umber/60">
+            あなたの周辺のカフェ・パン屋を見つけよう
+          </p>
+        </div>
       </div>
       )}
 
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm text-umber/60">
-            {showFavoritesOnly ? `${favorites.filter(id => stores.some(s => s.id === id)).length}件のお気に入い` : `${total}件のお店が見つかりました`}
+            {showFavoritesOnly ? `${favorites.filter(id => stores.some(s => s.id === id)).length}件のお気に入り` : `${total}件のお店が見つかりました`}
           </p>
           {userLocation && (
             <p className="text-xs text-terracotta">📍 現在地周辺を表示中</p>
@@ -197,7 +225,7 @@ export default function StoreBrowser({
               onClick={() => setShowFavoritesOnly(false)}
               className="rounded-full bg-terracotta px-3 py-1.5 text-xs font-medium text-white hover:bg-clay transition-colors"
             >
-              ❤️ お気に入いのみ ✕
+              ❤️ お気に入りのみ ✕
             </button>
           )}
         </div>
@@ -219,20 +247,15 @@ export default function StoreBrowser({
             {(() => {
               let displayStores = showFavoritesOnly ? stores.filter(s => favorites.includes(s.id)) : stores;
               if (useNearby && userLocation) {
-                const newDistanceMap: Record<string, number> = {};
                 displayStores = displayStores
-                  .map(store => {
-                    const distance = store.latitude && store.longitude
+                  .map(store => ({
+                    store,
+                    distance: store.latitude && store.longitude
                       ? calculateDistance(userLocation.lat, userLocation.lon, store.latitude, store.longitude)
-                      : Infinity;
-                    newDistanceMap[store.id] = distance;
-                    return { store, distance };
-                  })
+                      : Infinity
+                  }))
                   .sort((a, b) => a.distance - b.distance)
                   .map(({ store }) => store);
-                setDistanceMap(newDistanceMap);
-              } else {
-                setDistanceMap({});
               }
               return displayStores.map((store) => (
                 <StoreCard

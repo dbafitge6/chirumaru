@@ -36,8 +36,9 @@ export async function GET(request: Request) {
       offset,
     });
   } catch (error) {
+    console.error("[API/stores] Error:", error);
     return Response.json(
-      { error: "Failed to fetch stores" },
+      { error: "Failed to fetch stores", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
