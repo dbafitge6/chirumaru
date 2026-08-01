@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAllStores } from '@/lib/airtable';
 import type { Store } from '@/lib/types';
 import StoreCard from '@/components/StoreCard';
 import SiteHeader from '@/components/SiteHeader';
@@ -25,7 +24,18 @@ export default function AccountPage() {
 
     const loadFavorites = async () => {
       try {
-        const allStores = await getAllStores();
+        const allStores: Store[] = [];
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+          const res = await fetch(`/api/stores?offset=${offset}`);
+          const data = await res.json();
+          allStores.push(...(data.items || []));
+          hasMore = data.hasMore || false;
+          offset += (data.items?.length || 0);
+        }
+
         const favorited = allStores.filter((store) => favorites.includes(store.id));
         setFavoriteStores(favorited);
       } catch (error) {
@@ -50,7 +60,7 @@ export default function AccountPage() {
               アカウント
             </h1>
             <p className="mt-2 text-umber/60">
-              お気に入いとアカウント情報を管理
+              お気に入りとアカウント情報を管理
             </p>
           </div>
 
@@ -59,7 +69,7 @@ export default function AccountPage() {
             <div className="mb-6 flex items-center gap-3">
               <span className="text-2xl">❤️</span>
               <h2 className="font-display text-2xl font-bold text-umber">
-                お気に入い ({favorites.length})
+                お気に入り ({favorites.length})
               </h2>
             </div>
 
@@ -68,7 +78,7 @@ export default function AccountPage() {
             ) : favorites.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-umber/20 bg-white/50 py-12 text-center">
                 <p className="text-umber/50">
-                  まだお気に入いがありません
+                  まだお気に入りがありません
                 </p>
                 <Link
                   href="/"

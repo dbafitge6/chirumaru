@@ -60,11 +60,11 @@ function StoreCard({
         style={{ clipPath: "polygon(100% 0, 45% 0, 100% 55%)" }}
       />
 
-      {/* お気に入いボタン */}
+      {/* お気に入りボタン */}
       <button
         onClick={toggleFavorite}
         className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/80 backdrop-blur-sm hover:bg-white transition-colors"
-        title={isFavorite ? 'お気に入いから削除' : 'お気に入いに追加'}
+        title={isFavorite ? 'お気に入りから削除' : 'お気に入りに追加'}
       >
         <span className={`text-lg ${isFavorite ? '❤️' : '🤍'}`}>
           {isFavorite ? '❤️' : '🤍'}
@@ -92,12 +92,12 @@ function StoreCard({
       </div>
 
       <div className="p-4">
-        <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center justify-between gap-2">
           <h3 className="font-display text-lg font-bold leading-snug text-umber flex-1">
             {store.name}
           </h3>
-          {distance !== undefined && distance !== Infinity && (
-            <span className="whitespace-nowrap text-xs font-medium text-terracotta bg-terracotta/10 px-2 py-1 rounded-full">
+          {distance !== undefined && distance !== null && distance !== Infinity && (
+            <span className="whitespace-nowrap text-xs font-medium text-white bg-terracotta px-2 py-1.5 rounded-full">
               {distance.toFixed(1)}km
             </span>
           )}
