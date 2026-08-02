@@ -27,6 +27,7 @@ export default function StoreBrowser({
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [useNearby, setUseNearby] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const distanceMap = useMemo(() => {
     if (!useNearby || !userLocation) return {};
     const map: Record<string, number> = {};
@@ -46,8 +47,14 @@ export default function StoreBrowser({
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    setMounted(true);
     const saved = JSON.parse(localStorage.getItem('favorites') || '[]');
     setFavorites(saved);
+
+    const savedFilters = JSON.parse(localStorage.getItem('storeFilters') || '{}');
+    if (savedFilters.keyword) setKeyword(savedFilters.keyword);
+    if (savedFilters.area) setArea(savedFilters.area);
+    if (savedFilters.activeTags) setActiveTags(savedFilters.activeTags);
   }, []);
 
   useEffect(() => {
@@ -92,6 +99,16 @@ export default function StoreBrowser({
   }, [keyword, area, activeTags]);
 
   useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('storeFilters', JSON.stringify({
+        keyword,
+        area,
+        activeTags,
+      }));
+    }
+  }, [keyword, area, activeTags, mounted]);
+
+  useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
       loadStores(0);
@@ -105,6 +122,13 @@ export default function StoreBrowser({
     setActiveTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
+  }
+
+  function clearAllFilters() {
+    setKeyword("");
+    setArea("すべて");
+    setActiveTags([]);
+    localStorage.removeItem('storeFilters');
   }
 
   async function handleRequestLocation() {
@@ -192,6 +216,15 @@ export default function StoreBrowser({
             あなたの周辺のカフェ・パン屋を見つけよう
           </p>
         </div>
+
+        {(keyword || area !== "すべて" || activeTags.length > 0) && (
+          <button
+            onClick={clearAllFilters}
+            className="mt-3 w-full rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:bg-umber/5 transition-colors"
+          >
+            ✕ 検索条件をリセット
+          </button>
+        )}
       </div>
       )}
 
