@@ -95,8 +95,8 @@ export default function SiteHeader() {
       </div>
 
       {showLoginModal && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-lg">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm top-16">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-2xl mx-4">
             <h2 className="text-xl font-bold text-umber mb-6">ログイン方法を選択</h2>
 
             <div className="space-y-3">
