@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 export default function SiteHeader() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -14,9 +15,20 @@ export default function SiteHeader() {
     setIsLoggedIn(!!token);
   }, []);
 
-  const handleLogin = () => {
-    localStorage.setItem('authToken', 'logged-in-' + Date.now());
+  const handleLoginClick = () => {
+    setShowLoginModal(true);
+  };
+
+  const handleGoogleLogin = () => {
+    localStorage.setItem('authToken', 'logged-in-google-' + Date.now());
     setIsLoggedIn(true);
+    setShowLoginModal(false);
+  };
+
+  const handleEmailLogin = () => {
+    localStorage.setItem('authToken', 'logged-in-email-' + Date.now());
+    setIsLoggedIn(true);
+    setShowLoginModal(false);
   };
 
   const handleLogout = () => {
@@ -67,7 +79,7 @@ export default function SiteHeader() {
           ) : (
             <>
               <button
-                onClick={handleLogin}
+                onClick={handleLoginClick}
                 className="px-3 py-2 text-sm font-medium text-umber hover:text-clay transition-colors"
               >
                 ログイン
@@ -83,6 +95,39 @@ export default function SiteHeader() {
           )}
         </div>
       </div>
+
+      {showLoginModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-lg">
+            <h2 className="text-xl font-bold text-umber mb-6">ログイン方法を選択</h2>
+
+            <div className="space-y-3">
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full flex items-center justify-center gap-3 rounded-full border border-umber/15 bg-white px-4 py-3 font-medium text-umber hover:bg-umber/5 transition-colors"
+              >
+                <span>🔵</span>
+                Googleでログイン
+              </button>
+
+              <button
+                onClick={handleEmailLogin}
+                className="w-full flex items-center justify-center gap-3 rounded-full bg-terracotta px-4 py-3 font-medium text-white hover:bg-clay transition-colors"
+              >
+                <span>✉️</span>
+                メールアドレスでログイン
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowLoginModal(false)}
+              className="mt-6 w-full rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber/60 hover:text-umber transition-colors"
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
