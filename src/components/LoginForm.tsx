@@ -54,12 +54,14 @@ export default function LoginForm() {
         localStorage.setItem('mockUsers', JSON.stringify(updated));
         localStorage.setItem('userId', `user_${Date.now()}`);
         localStorage.setItem('userEmail', email);
+        localStorage.setItem('authToken', `auth_${Date.now()}`);
         router.push('/');
       } else {
         // ログイン：テストユーザーをチェック
         if (testUsers[email] === password) {
           localStorage.setItem('userId', `user_${email.split('@')[0]}`);
           localStorage.setItem('userEmail', email);
+          localStorage.setItem('authToken', `auth_${Date.now()}`);
           router.push('/');
         } else {
           setError('メールアドレスまたはパスワードが間違っています');
@@ -144,6 +146,7 @@ export default function LoginForm() {
                   const payload = JSON.parse(atob(token.split('.')[1]));
                   localStorage.setItem('userId', `google_${payload.sub}`);
                   localStorage.setItem('userEmail', payload.email);
+                  localStorage.setItem('authToken', `auth_${Date.now()}`);
                   router.push('/');
                 }
               }}
