@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleLogin } from '@react-oauth/google';
+import { createUser, getUserByEmail } from '@/lib/auth';
 
 const DEFAULT_USERS = {
   'test@example.com': 'password123',
@@ -48,6 +49,17 @@ export default function LoginForm() {
           setLoading(false);
           return;
         }
+
+        try {
+          // Airtable にユーザーを作成
+          await createUser(email, password, 'Email');
+        } catch (err) {
+          console.error('Failed to create user in Airtable:', err);
+          setError('アカウント作成に失敗しました');
+          setLoading(false);
+          return;
+        }
+
         // テストユーザーに追加
         const updated = { ...testUsers, [email]: password };
         setTestUsers(updated);
@@ -59,6 +71,18 @@ export default function LoginForm() {
       } else {
         // ログイン：テストユーザーをチェック
         if (testUsers[email] === password) {
+          try {
+            // Airtable にユーザー記録があるか確認
+            const existingUser = await getUserByEmail(email);
+            // なければ作成
+            if (!existingUser) {
+              await createUser(email, password, 'Email');
+            }
+          } catch (err) {
+            console.error('Failed to save user to Airtable:', err);
+            // Airtable エラーでもローカルログインは進める
+          }
+
           localStorage.setItem('userId', `user_${email.split('@')[0]}`);
           localStorage.setItem('userEmail', email);
           localStorage.setItem('authToken', `auth_${Date.now()}`);
@@ -139,11 +163,24 @@ export default function LoginForm() {
           <p className="text-center text-sm text-umber/60 mb-4">または</p>
           <div className="flex justify-center">
             <GoogleLogin
-              onSuccess={(credentialResponse) => {
+              onSuccess={async (credentialResponse) => {
                 if (credentialResponse.credential) {
                   // Decode JWT token to get email
                   const token = credentialResponse.credential;
                   const payload = JSON.parse(atob(token.split('.')[1]));
+
+                  try {
+                    // Airtable にユーザー記録があるか確認
+                    const existingUser = await getUserByEmail(payload.email);
+                    // なければ作成
+                    if (!existingUser) {
+                      await createUser(payload.email, '', 'Google');
+                    }
+                  } catch (err) {
+                    console.error('Failed to save user to Airtable:', err);
+                    // Airtable エラーでもログインは進める
+                  }
+
                   localStorage.setItem('userId', `google_${payload.sub}`);
                   localStorage.setItem('userEmail', payload.email);
                   localStorage.setItem('authToken', `auth_${Date.now()}`);
