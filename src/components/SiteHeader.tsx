@@ -12,6 +12,14 @@ export default function SiteHeader() {
     setMounted(true);
     const token = localStorage.getItem('authToken');
     setIsLoggedIn(!!token);
+
+    const handleStorageChange = () => {
+      const updatedToken = localStorage.getItem('authToken');
+      setIsLoggedIn(!!updatedToken);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const handleLogout = () => {
