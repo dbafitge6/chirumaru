@@ -147,7 +147,7 @@ export default function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-4 flex flex-col gap-2 text-center">
         <button
           onClick={() => setIsSignUp(!isSignUp)}
           className="text-sm text-terracotta hover:underline"
@@ -156,6 +156,11 @@ export default function LoginForm() {
             ? 'ログインはこちら'
             : 'アカウント作成はこちら'}
         </button>
+        {!isSignUp && (
+          <a href="/password-reset" className="text-sm text-umber/60 hover:text-terracotta">
+            パスワードを忘れた
+          </a>
+        )}
       </div>
 
       {!isSignUp && (
