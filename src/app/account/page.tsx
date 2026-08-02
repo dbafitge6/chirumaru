@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import type { Store } from '@/lib/types';
 import StoreCard from '@/components/StoreCard';
 import SiteHeader from '@/components/SiteHeader';
@@ -12,12 +13,22 @@ export default function AccountPage() {
   const [favoriteStores, setFavoriteStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      router.push('/login');
+      return;
+    }
+
+    setIsLoggedIn(true);
     const saved = JSON.parse(localStorage.getItem('favorites') || '[]');
     setFavorites(saved);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (!mounted) return;
@@ -48,7 +59,7 @@ export default function AccountPage() {
     loadFavorites();
   }, [favorites, mounted]);
 
-  if (!mounted) return null;
+  if (!mounted || !isLoggedIn) return null;
 
   return (
     <>
