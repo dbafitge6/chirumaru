@@ -15,8 +15,9 @@ export default function SiteHeader() {
   }, []);
 
   const handleLogout = () => {
-    setIsLoggedIn(false);
     localStorage.removeItem('authToken');
+    setIsLoggedIn(false);
+    window.location.reload();
   };
 
   return (
