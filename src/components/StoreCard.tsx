@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Store } from "@/lib/types";
 import { memo, useState, useEffect } from "react";
 
@@ -18,6 +19,7 @@ function StoreCard({
   distance?: number;
 }) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
@@ -26,6 +28,13 @@ function StoreCard({
 
   const toggleFavorite = (e: React.MouseEvent) => {
     e.preventDefault();
+
+    const authToken = localStorage.getItem('authToken');
+    if (!authToken) {
+      router.push('/login');
+      return;
+    }
+
     const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
     if (isFavorite) {
       const filtered = favorites.filter((id: string) => id !== store.id);
