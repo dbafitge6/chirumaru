@@ -45,17 +45,6 @@ export default async function StorePage({
     <>
       <SiteHeader />
 
-      {(store.photoUrl || store.photoUrls[0]) && (
-        <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-gray-200">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={store.photoUrl || store.photoUrls[0]}
-            alt={store.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
-
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
           <div className="flex items-center justify-between gap-2">
