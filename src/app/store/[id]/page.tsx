@@ -45,11 +45,11 @@ export default async function StorePage({
     <>
       <SiteHeader />
 
-      {store.photoUrl && (
-        <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden">
+      {(store.photoUrl || store.photoUrls[0]) && (
+        <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-gray-200">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={store.photoUrl}
+            src={store.photoUrl || store.photoUrls[0]}
             alt={store.name}
             className="w-full h-full object-cover"
           />
