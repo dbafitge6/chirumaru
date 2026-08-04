@@ -170,13 +170,13 @@ export default async function StorePage({
                 )}
               </dl>
 
-              <div className="mt-6 flex flex-wrap gap-3">
+              <div className="mt-6 flex flex-col gap-2 sm:flex-wrap sm:gap-3">
                 {mapSearchUrl && (
                   <a
                     href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full bg-terracotta-btn px-5 py-2.5 text-sm font-medium text-white hover:bg-clay transition-colors"
+                    className="rounded-full bg-terracotta-btn px-5 py-2.5 text-sm font-medium text-white hover:bg-clay transition-colors text-center"
                   >
                     Googleマップで開く
                   </a>
@@ -186,7 +186,7 @@ export default async function StorePage({
                     href={store.website}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-umber/15 bg-white px-5 py-2.5 text-sm font-medium text-umber hover:border-terracotta/50"
+                    className="rounded-full border border-umber/15 bg-white px-5 py-2.5 text-sm font-medium text-umber hover:border-terracotta/50 text-center"
                   >
                     公式サイト
                   </a>
@@ -196,7 +196,7 @@ export default async function StorePage({
                   href={photoSubmitUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full border border-terracotta/40 bg-blush/40 px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush"
+                  className="rounded-full border border-terracotta/40 bg-blush/40 px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush text-center"
                 >
                   📷 写真を投稿する
                 </a>
