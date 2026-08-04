@@ -31,7 +31,11 @@ function splitPhotoUrls(raw: string | undefined): string[] {
     .map((u) => {
       if (u.includes('drive.google.com/open?id=')) {
         const id = u.match(/id=([^&]+)/)?.[1];
-        return id ? `https://drive.google.com/uc?export=view&id=${id}` : u;
+        return id ? `https://drive.google.com/uc?id=${id}&export=download` : u;
+      }
+      if (u.includes('open?id=')) {
+        const id = u.match(/id=([^&]+)/)?.[1];
+        return id ? `https://drive.google.com/uc?id=${id}&export=download` : u;
       }
       return u;
     })
