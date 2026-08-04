@@ -29,13 +29,8 @@ function splitPhotoUrls(raw: string | undefined): string[] {
     .split(/[\n,]/)
     .map((u) => u.trim())
     .map((u) => {
-      if (u.includes('drive.google.com/open?id=')) {
-        const id = u.match(/id=([^&]+)/)?.[1];
-        return id ? `https://drive.google.com/uc?id=${id}&export=download` : u;
-      }
-      if (u.includes('open?id=')) {
-        const id = u.match(/id=([^&]+)/)?.[1];
-        return id ? `https://drive.google.com/uc?id=${id}&export=download` : u;
+      if (u.includes('drive.google.com')) {
+        return `/api/proxy-image?url=${encodeURIComponent(u)}`;
       }
       return u;
     })
