@@ -6,6 +6,7 @@ const API_KEY = process.env.AIRTABLE_API_KEY;
 
 type AirtableRecord = {
   id: string;
+  createdTime: string;
   fields: Record<string, string>;
 };
 
@@ -27,6 +28,13 @@ function splitPhotoUrls(raw: string | undefined): string[] {
   return raw
     .split(/[\n,]/)
     .map((u) => u.trim())
+    .map((u) => {
+      if (u.includes('drive.google.com/open?id=')) {
+        const id = u.match(/id=([^&]+)/)?.[1];
+        return id ? `https://drive.google.com/uc?export=view&id=${id}` : u;
+      }
+      return u;
+    })
     .filter(Boolean);
 }
 
@@ -92,6 +100,9 @@ export async function getAllStores(): Promise<Store[]> {
     records.push(...data.records);
     offset = data.offset;
   } while (offset);
+
+  // Sort by creation time (ascending) to match Airtable's display order
+  records.sort((a, b) => new Date(a.createdTime).getTime() - new Date(b.createdTime).getTime());
 
   return records.map(toStore);
 }
