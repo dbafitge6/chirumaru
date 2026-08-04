@@ -15,30 +15,30 @@ export async function verifyPassword(password: string, hashedPassword: string) {
 export async function createUser(email: string, password: string, loginMethod: 'Email' | 'Google') {
   const hashedPassword = loginMethod === 'Google' ? '' : await hashPassword(password);
 
-  const response = await fetch(
-    `https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${USERS_TABLE_ID}`,
-    {
+  try {
+    const response = await fetch('/api/auth/create-user', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        fields: {
-          Email: email,
-          Password: hashedPassword,
-          LoginMethod: loginMethod,
-          CreatedAt: new Date().toISOString(),
-        },
+        email,
+        password: hashedPassword,
+        loginMethod,
       }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('API error:', response.status, errorData);
+      throw new Error(`Failed to create user: ${response.status}`);
     }
-  );
 
-  if (!response.ok) {
-    throw new Error('Failed to create user');
+    return response.json();
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
   }
-
-  return response.json();
 }
 
 export async function getUserByEmail(email: string) {

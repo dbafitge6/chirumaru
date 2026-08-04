@@ -50,14 +50,12 @@ export default function LoginForm() {
           return;
         }
 
+        // Airtable にユーザーを作成（失敗しても続行）
         try {
-          // Airtable にユーザーを作成
           await createUser(email, password, 'Email');
         } catch (err) {
           console.error('Failed to create user in Airtable:', err);
-          setError('アカウント作成に失敗しました');
-          setLoading(false);
-          return;
+          // Airtable エラーでもローカルログインは進める
         }
 
         // テストユーザーに追加
@@ -100,8 +98,8 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold mb-6 text-center">
+    <div className="w-full max-w-md mx-auto rounded-3xl border border-umber/10 bg-white/60 p-8">
+      <h2 className="font-display text-2xl font-bold text-umber mb-6 text-center">
         {isSignUp ? 'アカウント作成' : 'ログイン'}
       </h2>
 
@@ -121,7 +119,7 @@ export default function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta"
+            className="w-full rounded-full border border-umber/15 bg-white px-4 py-2.5 text-umber focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/30"
           />
         </div>
 
@@ -134,14 +132,14 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-terracotta"
+            className="w-full rounded-full border border-umber/15 bg-white px-4 py-2.5 text-umber focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/30"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-terracotta text-white py-2 rounded-lg font-medium hover:bg-clay disabled:opacity-50"
+          className="w-full rounded-full bg-terracotta-btn py-2.5 font-medium text-white transition-colors hover:bg-clay disabled:opacity-50"
         >
           {loading ? '処理中...' : isSignUp ? '作成' : 'ログイン'}
         </button>
@@ -150,21 +148,21 @@ export default function LoginForm() {
       <div className="mt-4 flex flex-col gap-2 text-center">
         <button
           onClick={() => setIsSignUp(!isSignUp)}
-          className="text-sm text-terracotta hover:underline"
+          className="text-sm text-clay hover:underline"
         >
           {isSignUp
             ? 'ログインはこちら'
             : 'アカウント作成はこちら'}
         </button>
         {!isSignUp && (
-          <a href="/password-reset" className="text-sm text-umber/60 hover:text-terracotta">
+          <a href="/password-reset" className="text-sm text-umber/60 hover:text-clay">
             パスワードを忘れた
           </a>
         )}
       </div>
 
       {!isSignUp && (
-        <div className="mt-6 border-t pt-6">
+        <div className="mt-6 border-t border-umber/10 pt-6">
           <p className="text-center text-sm text-umber/60 mb-4">または</p>
           <div className="flex justify-center">
             <GoogleLogin

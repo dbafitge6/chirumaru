@@ -45,6 +45,17 @@ export default async function StorePage({
     <>
       <SiteHeader />
 
+      {store.photoUrl && (
+        <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={store.photoUrl}
+            alt={store.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+
       <main className="flex-1">
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
           <div className="flex items-center justify-between gap-2">
@@ -176,7 +187,7 @@ export default async function StorePage({
                     href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full bg-terracotta px-5 py-2.5 text-sm font-medium text-white hover:bg-clay"
+                    className="rounded-full bg-terracotta-btn px-5 py-2.5 text-sm font-medium text-white hover:bg-clay transition-colors"
                   >
                     Googleマップで開く
                   </a>
@@ -201,6 +212,17 @@ export default async function StorePage({
                   📷 写真を投稿する
                 </a>
               </div>
+
+              {store.photoUrls.length > 1 && (
+                <div className="mt-6 overflow-hidden rounded-2xl">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={store.photoUrls[store.photoUrls.length - 1]}
+                    alt={`${store.name}の食べ物写真`}
+                    className="w-full h-64 object-cover"
+                  />
+                </div>
+              )}
 
               {mapEmbedUrl && (
                 <div className="mt-6 overflow-hidden rounded-2xl border border-umber/10">
