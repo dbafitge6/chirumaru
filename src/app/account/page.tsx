@@ -14,6 +14,7 @@ export default function AccountPage() {
   const [loading, setLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -28,6 +29,8 @@ export default function AccountPage() {
     setIsLoggedIn(true);
     const saved = JSON.parse(localStorage.getItem('favorites') || '[]');
     setFavorites(saved);
+    const email = localStorage.getItem('userEmail') || '';
+    setUserEmail(email);
   }, [router]);
 
   useEffect(() => {
@@ -75,6 +78,22 @@ export default function AccountPage() {
             </p>
           </div>
 
+          {/* Account Info Section */}
+          <div className="mb-8 rounded-3xl border border-umber/10 bg-white/60 p-6 sm:p-8">
+            <div className="mb-4 flex items-center gap-3">
+              <span className="text-2xl">👤</span>
+              <h2 className="font-display text-2xl font-bold text-umber">
+                アカウント情報
+              </h2>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm text-umber/60 mb-1">メールアドレス</p>
+                <p className="text-lg font-medium text-umber">{userEmail}</p>
+              </div>
+            </div>
+          </div>
+
           {/* Favorites Section */}
           <div className="rounded-3xl border border-umber/10 bg-white/60 p-6 sm:p-8">
             <div className="mb-6 flex items-center gap-3">
@@ -93,7 +112,7 @@ export default function AccountPage() {
                 </p>
                 <Link
                   href="/"
-                  className="mt-4 inline-block rounded-full bg-terracotta px-6 py-2.5 text-sm font-medium text-white hover:bg-clay transition-colors"
+                  className="mt-4 inline-block rounded-full bg-terracotta-btn px-6 py-2.5 text-sm font-medium text-white hover:bg-clay transition-colors"
                 >
                   カフェを探す
                 </Link>
