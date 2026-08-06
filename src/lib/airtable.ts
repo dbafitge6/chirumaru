@@ -162,25 +162,15 @@ export async function getStoreWithNeighbors(
 ): Promise<{ store: Store; prevId: string | null; nextId: string | null } | null> {
   const stores = await getAllStores();
 
-  // Apply filters if provided (matching StoreBrowser logic)
-  const filtered = filters ? stores.filter((s) => {
-    if (filters.area && filters.area !== "すべて" && s.area !== filters.area) return false;
-    if (filters.tags && filters.tags.length > 0 && !filters.tags.every((t) => s.tags.includes(t))) return false;
-    if (filters.keyword) {
-      const kw = filters.keyword.trim().toLowerCase();
-      const haystack = `${s.name} ${s.memo} ${s.menu} ${s.tags.join(" ")}`.toLowerCase();
-      if (!haystack.includes(kw)) return false;
-    }
-    return true;
-  }) : stores;
-
-  const index = filtered.findIndex((s) => s.id === id);
+  // Always search from all stores to avoid 404 when filters don't match
+  // (prev/next navigation uses the full store order)
+  const index = stores.findIndex((s) => s.id === id);
   if (index === -1) return null;
 
   return {
-    store: filtered[index],
-    prevId: index > 0 ? filtered[index - 1].id : null,
-    nextId: index < filtered.length - 1 ? filtered[index + 1].id : null,
+    store: stores[index],
+    prevId: index > 0 ? stores[index - 1].id : null,
+    nextId: index < stores.length - 1 ? stores[index + 1].id : null,
   };
 }
 
