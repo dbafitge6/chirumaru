@@ -6,12 +6,25 @@ import type { Store } from "@/lib/types";
 import StoreCard from "./StoreCard";
 import { getGeolocation, calculateDistance } from "@/lib/geolocation";
 
+// ローディング中に出す新潟カフェ豆知識。
+// 「読み込み中...」だけの無機質な待機時間を、少しでも発見のきっかけに変える。
+const TRIVIA = [
+  "新潟は蔵元の数が全国最多。日本酒を使ったスイーツを出すカフェも。",
+  "自家焙煎の豆は、見た目より“香りの違い”に注目すると個性がわかりやすい。",
+  "古民家カフェは、梁や土壁が残っている店ほど築100年を超えていることも。",
+  "コーヒーの好みは、酸味・甘み・余韻の3点で言語化すると見つけやすい。",
+  "新潟市の砂丘地エリアには、地図に載りにくい一軒家カフェが点在しています。",
+  "焼き菓子は開店直後の“1回目の焼き上がり”が一番香ばしいと言われます。",
+];
+
 export default function StoreBrowser({
   areas,
   featureTags,
+  discoveryTags = [],
 }: {
   areas: string[];
   featureTags: string[];
+  discoveryTags?: string[];
 }) {
   const [keyword, setKeyword] = useState("");
   const [area, setArea] = useState("すべて");
@@ -20,7 +33,7 @@ export default function StoreBrowser({
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showFilter, setShowFilter] = useState(true);
+  const [showFilter, setShowFilter] = useState(false);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const [menus, setMenus] = useState<string[]>([]);
@@ -28,6 +41,7 @@ export default function StoreBrowser({
   const [useNearby, setUseNearby] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [trivia, setTrivia] = useState(TRIVIA[0]);
   const distanceMap = useMemo(() => {
     if (!useNearby || !userLocation) return {};
     const map: Record<string, number> = {};
@@ -62,7 +76,6 @@ export default function StoreBrowser({
       try {
         const res = await fetch("/api/tags");
         const data = await res.json();
-        console.log("Fetched tags:", data);
         setMenus(data.menus || []);
       } catch (error) {
         console.error("Failed to fetch tags:", error);
@@ -74,6 +87,9 @@ export default function StoreBrowser({
 
   const loadStores = useCallback(async (offset: number) => {
     setLoading(true);
+    if (offset === 0) {
+      setTrivia(TRIVIA[Math.floor(Math.random() * TRIVIA.length)]);
+    }
     try {
       const params = new URLSearchParams();
       if (keyword) params.set("keyword", keyword);
@@ -148,107 +164,197 @@ export default function StoreBrowser({
     setLocationError(null);
   }
 
+  const hasActiveFilters = keyword || area !== "すべて" || activeTags.length > 0;
+
+  function shuffleArray<T>(array: T[]): T[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+
+  let displayStores = showFavoritesOnly ? stores.filter(s => favorites.includes(s.id)) : stores;
+  if (useNearby && userLocation) {
+    displayStores = displayStores
+      .map(store => ({
+        store,
+        distance: store.latitude && store.longitude
+          ? calculateDistance(userLocation.lat, userLocation.lon, store.latitude, store.longitude)
+          : Infinity
+      }))
+      .sort((a, b) => a.distance - b.distance)
+      .map(({ store }) => store);
+  } else if (!hasActiveFilters && !showFavoritesOnly) {
+    displayStores = shuffleArray(displayStores);
+  }
+  const visibleCount = showFavoritesOnly
+    ? favorites.filter(id => stores.some(s => s.id === id)).length
+    : total;
+  const isInitialLoading = loading && stores.length === 0;
+
   return (
     <div>
-      {/* Toggle button - ヘッダー下の右側 */}
-      <button
-        onClick={() => setShowFilter(!showFilter)}
-        className="fixed right-4 top-20 z-[9999] flex h-10 w-10 items-center justify-center rounded-full bg-terracotta/70 text-white hover:bg-terracotta/90 transition-colors sm:block"
-        title={showFilter ? "フィルターを隠す" : "フィルターを表示"}
-      >
-        {showFilter ? "✕" : "🔍"}
-      </button>
-
-      {showFilter && (
-      <div className="sticky top-0 z-50 -mx-4 mb-8 border-b border-umber/10 bg-cream/90 px-4 py-4 backdrop-blur-md sm:mx-0 sm:rounded-3xl sm:border sm:px-6 sm:shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      {/* 検索を常に上部に固定 — スクロールしても消えない compact search bar */}
+      <div className="sticky top-0 z-40 -mx-4 border-b border-line bg-paper/95 px-4 pb-3 pt-4 backdrop-blur-md sm:mx-0 sm:rounded-b-xl sm:border sm:border-t-0 sm:px-5">
+        <div className="flex items-center gap-2">
           <div className="relative flex-1">
+            <svg
+              viewBox="0 0 24 24"
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-graphite"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <circle cx="11" cy="11" r="7" />
+              <path strokeLinecap="round" d="m20 20-3.2-3.2" />
+            </svg>
             <input
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               placeholder="お店の名前やメニューで探す"
-              className="w-full rounded-full border border-umber/15 bg-white px-5 py-2.5 text-base text-umber placeholder:text-umber/40 focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/30"
+              aria-label="お店の名前やメニューで探す"
+              className="w-full rounded-lg border border-line bg-surface py-2.5 pl-10 pr-4 text-base text-ink placeholder:text-graphite/60 focus:border-ink focus:outline-none focus:ring-2 focus:ring-rust/25"
               style={{ WebkitAppearance: "none", appearance: "none" }}
             />
           </div>
-          <select
-            value={area}
-            onChange={(e) => setArea(e.target.value)}
-            className="rounded-full border border-umber/15 bg-white px-4 py-2.5 text-sm text-umber focus:border-terracotta focus:outline-none focus:ring-2 focus:ring-terracotta/30 sm:w-48"
-          >
-            {areas.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {menus.slice(0, 10).map((tag) => {
-            const active = activeTags.includes(tag);
-            return (
-              <button
-                key={tag}
-                onClick={() => toggleTag(tag)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                  active
-                    ? "border-terracotta bg-terracotta text-white"
-                    : "border-umber/15 bg-white text-umber/70 hover:border-terracotta/50 hover:text-clay"
-                }`}
-              >
-                {tag}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-4 rounded-lg border border-terracotta/20 bg-terracotta/5 p-4">
-          <Link
-            href="/nearby"
-            className="flex items-center justify-between gap-2 font-medium text-terracotta hover:text-clay transition-colors"
-          >
-            <span>📍 現在地周辺を検索</span>
-            <span>→</span>
-          </Link>
-          <p className="mt-1 text-xs text-umber/60">
-            あなたの周辺のカフェ・パン屋を見つけよう
-          </p>
-        </div>
-
-        {(keyword || area !== "すべて" || activeTags.length > 0) && (
           <button
-            onClick={clearAllFilters}
-            className="mt-3 w-full rounded-full border border-umber/15 bg-white px-4 py-2 text-sm font-medium text-umber hover:bg-umber/5 transition-colors"
+            onClick={() => setShowFilter((v) => !v)}
+            aria-expanded={showFilter}
+            aria-label={showFilter ? "詳細フィルターを閉じる" : "詳細フィルターを開く"}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+              showFilter || hasActiveFilters
+                ? "border-ink bg-ink text-paper"
+                : "border-line bg-surface text-ink hover:border-ink/40"
+            }`}
+            title="絞り込み"
           >
-            ✕ 検索条件をリセット
+            <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path strokeLinecap="round" d="M4 6h16M8 12h8M11 18h2" />
+            </svg>
           </button>
+        </div>
+
+        {/* カテゴリタブ（隠れ家・古民家・新規開店など）横スクロール */}
+        {discoveryTags.length > 0 && (
+          <div className="no-scrollbar mt-3 flex gap-4 overflow-x-auto">
+            {discoveryTags.map((tag) => {
+              const active = activeTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  onClick={() => toggleTag(tag)}
+                  aria-pressed={active}
+                  className={`shrink-0 whitespace-nowrap border-b-2 pb-2 pt-1 text-sm font-medium tracking-wide transition-colors ${
+                    active
+                      ? "border-rust text-ink"
+                      : "border-transparent text-graphite hover:text-ink"
+                  }`}
+                >
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
         )}
       </div>
+
+      {/* 詳細フィルターパネル（折りたたみ） */}
+      {showFilter && (
+        <div className="-mx-4 mb-8 border-b border-line bg-surface px-4 py-5 sm:mx-0 sm:mt-4 sm:rounded-xl sm:border sm:px-6">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-graphite">エリア</p>
+            <select
+              value={area}
+              onChange={(e) => setArea(e.target.value)}
+              className="w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm text-ink focus:border-ink focus:outline-none focus:ring-2 focus:ring-rust/25 sm:w-56"
+            >
+              {areas.map((a) => (
+                <option key={a} value={a}>
+                  {a}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {menus.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-graphite">タグで絞り込む</p>
+              <div className="flex flex-wrap gap-2">
+                {menus.slice(0, 12).map((tag) => {
+                  const active = activeTags.includes(tag);
+                  return (
+                    <button
+                      key={tag}
+                      onClick={() => toggleTag(tag)}
+                      aria-pressed={active}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-medium tracking-wide transition-colors ${
+                        active
+                          ? "border-ink bg-ink text-paper"
+                          : "border-line bg-paper text-graphite hover:border-ink/40 hover:text-ink"
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <Link
+            href="/nearby"
+            className="mt-5 flex items-center justify-between gap-2 rounded-lg border border-line px-4 py-3 text-sm text-ink transition-colors hover:border-ink/40"
+          >
+            <span className="flex items-center gap-2">
+              <svg viewBox="0 0 24 24" className="h-4 w-4 text-rust" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 21s7-6.6 7-11.5a7 7 0 1 0-14 0C5 14.4 12 21 12 21Z" />
+                <circle cx="12" cy="9.5" r="2.2" />
+              </svg>
+              現在地周辺を検索
+            </span>
+            <span className="text-graphite">→</span>
+          </Link>
+
+          {hasActiveFilters && (
+            <button
+              onClick={clearAllFilters}
+              className="mt-4 w-full rounded-lg border border-line bg-paper px-4 py-2.5 text-sm font-medium text-graphite transition-colors hover:border-ink/40 hover:text-ink"
+            >
+              検索条件をリセット
+            </button>
+          )}
+        </div>
       )}
 
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mb-4 mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-umber/60">
-            {showFavoritesOnly ? `${favorites.filter(id => stores.some(s => s.id === id)).length}件のお気に入り` : `${total}件のお店が見つかりました`}
+          <p className="text-sm text-graphite">
+            {isInitialLoading
+              ? "検索中…"
+              : showFavoritesOnly
+              ? `${visibleCount}件のお気に入り`
+              : `${visibleCount}件のお店が見つかりました`}
           </p>
           {userLocation && (
-            <p className="text-xs text-terracotta">📍 現在地周辺を表示中</p>
+            <p className="mt-0.5 text-xs font-medium text-rust">現在地周辺を表示中</p>
           )}
         </div>
         <div className="flex flex-wrap gap-2">
           {!userLocation ? (
             <button
               onClick={handleRequestLocation}
-              className="rounded-full border border-umber/15 bg-white px-3 py-1.5 text-xs font-medium text-umber/70 hover:border-terracotta/50 transition-colors"
+              className="rounded-lg border border-line bg-surface px-3 py-1.5 text-xs font-medium text-graphite transition-colors hover:border-ink/40 hover:text-ink"
             >
-              📍 近くのお店を表示
+              近くのお店を表示
             </button>
           ) : (
             <button
               onClick={handleClearLocation}
-              className="rounded-full border border-terracotta bg-terracotta/10 px-3 py-1.5 text-xs font-medium text-terracotta hover:bg-terracotta/20 transition-colors"
+              className="rounded-lg border border-rust bg-rust-tint px-3 py-1.5 text-xs font-medium text-rust-dark transition-colors hover:bg-rust-tint/70"
             >
               ✕ 現在地をクリア
             </button>
@@ -256,61 +362,55 @@ export default function StoreBrowser({
           {showFavoritesOnly && (
             <button
               onClick={() => setShowFavoritesOnly(false)}
-              className="rounded-full bg-terracotta px-3 py-1.5 text-xs font-medium text-white hover:bg-clay transition-colors"
+              className="rounded-lg bg-ink px-3 py-2 text-xs font-medium text-paper transition-colors hover:bg-ink/85"
             >
-              ❤️ お気に入りのみ ✕
+              お気に入りのみ ✕
             </button>
           )}
         </div>
       </div>
 
       {locationError && (
-        <div className="mb-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+        <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">
           {locationError}
         </div>
       )}
 
-      {(showFavoritesOnly ? favorites.filter(id => stores.some(s => s.id === id)).length === 0 : total === 0) ? (
-        <div className="rounded-3xl border border-dashed border-umber/20 bg-white/50 py-16 text-center text-umber/50">
+      {isInitialLoading ? (
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-line bg-surface px-6 py-16 text-center">
+          <span className="h-2 w-2 animate-pulse rounded-full bg-rust" aria-hidden="true" />
+          <p className="max-w-sm text-sm leading-relaxed text-graphite">
+            <span className="font-semibold text-ink">豆知識　</span>
+            {trivia}
+          </p>
+        </div>
+      ) : visibleCount === 0 ? (
+        <div className="rounded-xl border border-dashed border-line bg-surface py-16 text-center text-graphite">
           条件に合うお店が見つかりませんでした。キーワードや絞り込みを変えてみてください。
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-5 pb-16 sm:grid-cols-2 lg:grid-cols-3">
-            {(() => {
-              let displayStores = showFavoritesOnly ? stores.filter(s => favorites.includes(s.id)) : stores;
-              if (useNearby && userLocation) {
-                displayStores = displayStores
-                  .map(store => ({
-                    store,
-                    distance: store.latitude && store.longitude
-                      ? calculateDistance(userLocation.lat, userLocation.lon, store.latitude, store.longitude)
-                      : Infinity
-                  }))
-                  .sort((a, b) => a.distance - b.distance)
-                  .map(({ store }) => store);
-              }
-              return displayStores.map((store) => (
-                <StoreCard
-                  key={store.id}
-                  store={store}
-                  keyword={keyword}
-                  area={area}
-                  activeTags={activeTags}
-                  distance={distanceMap[store.id]}
-                />
-              ));
-            })()}
+          <div className="grid grid-cols-1 gap-6 pb-16 sm:grid-cols-2 lg:grid-cols-3">
+            {displayStores.map((store) => (
+              <StoreCard
+                key={store.id}
+                store={store}
+                keyword={keyword}
+                area={area}
+                activeTags={activeTags}
+                distance={distanceMap[store.id]}
+              />
+            ))}
           </div>
 
           {hasMore && (
-            <div className="text-center pb-16">
+            <div className="pb-16 text-center">
               <button
                 onClick={() => loadStores(stores.length)}
                 disabled={loading}
-                className="rounded-full bg-terracotta px-6 py-2.5 text-sm font-medium text-white hover:bg-clay disabled:opacity-50"
+                className="rounded-lg bg-rust px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-rust-dark disabled:opacity-50"
               >
-                {loading ? "読み込み中..." : "もっと見る"}
+                {loading ? "読み込み中…" : "もっと見る"}
               </button>
             </div>
           )}
