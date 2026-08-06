@@ -85,34 +85,30 @@ export default function StoreBrowser({
     fetchTags();
   }, []);
 
-  const loadStores = useCallback(async (offset: number) => {
+  const hasActiveFilters = keyword || area !== "すべて" || activeTags.length > 0;
+
+  const loadStores = useCallback(async () => {
     setLoading(true);
-    if (offset === 0) {
-      setTrivia(TRIVIA[Math.floor(Math.random() * TRIVIA.length)]);
-    }
+    setTrivia(TRIVIA[Math.floor(Math.random() * TRIVIA.length)]);
     try {
       const params = new URLSearchParams();
       if (keyword) params.set("keyword", keyword);
       if (area && area !== "すべて") params.set("area", area);
       if (activeTags.length > 0) params.set("tags", activeTags.join(","));
-      params.set("offset", offset.toString());
+      if (!hasActiveFilters) params.set("shuffle", "true");
 
       const res = await fetch(`/api/stores?${params}`);
       const data = await res.json();
 
-      if (offset === 0) {
-        setStores(data.items);
-      } else {
-        setStores((prev) => [...prev, ...data.items]);
-      }
+      setStores(data.items);
       setTotal(data.total);
-      setHasMore(data.hasMore);
+      setHasMore(false);
     } catch (error) {
       console.error("Failed to load stores:", error);
     } finally {
       setLoading(false);
     }
-  }, [keyword, area, activeTags]);
+  }, [keyword, area, activeTags, hasActiveFilters]);
 
   useEffect(() => {
     if (mounted) {
@@ -127,7 +123,7 @@ export default function StoreBrowser({
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
     debounceTimeout.current = setTimeout(() => {
-      loadStores(0);
+      loadStores();
     }, keyword ? 300 : 0);
     return () => {
       if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -164,17 +160,6 @@ export default function StoreBrowser({
     setLocationError(null);
   }
 
-  const hasActiveFilters = keyword || area !== "すべて" || activeTags.length > 0;
-
-  function shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  }
-
   let displayStores = showFavoritesOnly ? stores.filter(s => favorites.includes(s.id)) : stores;
   if (useNearby && userLocation) {
     displayStores = displayStores
@@ -186,8 +171,6 @@ export default function StoreBrowser({
       }))
       .sort((a, b) => a.distance - b.distance)
       .map(({ store }) => store);
-  } else if (!hasActiveFilters && !showFavoritesOnly) {
-    displayStores = shuffleArray(displayStores);
   }
   const visibleCount = showFavoritesOnly
     ? favorites.filter(id => stores.some(s => s.id === id)).length
@@ -389,32 +372,18 @@ export default function StoreBrowser({
           条件に合うお店が見つかりませんでした。キーワードや絞り込みを変えてみてください。
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 gap-6 pb-16 sm:grid-cols-2 lg:grid-cols-3">
-            {displayStores.map((store) => (
-              <StoreCard
-                key={store.id}
-                store={store}
-                keyword={keyword}
-                area={area}
-                activeTags={activeTags}
-                distance={distanceMap[store.id]}
-              />
-            ))}
-          </div>
-
-          {hasMore && (
-            <div className="pb-16 text-center">
-              <button
-                onClick={() => loadStores(stores.length)}
-                disabled={loading}
-                className="rounded-lg bg-rust px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-rust-dark disabled:opacity-50"
-              >
-                {loading ? "読み込み中…" : "もっと見る"}
-              </button>
-            </div>
-          )}
-        </>
+        <div className="grid grid-cols-1 gap-6 pb-16 sm:grid-cols-2 lg:grid-cols-3">
+          {displayStores.map((store) => (
+            <StoreCard
+              key={store.id}
+              store={store}
+              keyword={keyword}
+              area={area}
+              activeTags={activeTags}
+              distance={distanceMap[store.id]}
+            />
+          ))}
+        </div>
       )}
     </div>
   );

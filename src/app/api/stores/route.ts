@@ -1,12 +1,20 @@
 import { getAllStores } from "@/lib/airtable";
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const keyword = searchParams.get("keyword") || "";
   const area = searchParams.get("area");
   const tagsParam = searchParams.get("tags");
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
-  const limit = 20;
+  const shuffle = searchParams.get("shuffle") === "true";
 
   const tags = tagsParam ? tagsParam.split(",").filter(Boolean) : [];
 
@@ -25,15 +33,13 @@ export async function GET(request: Request) {
       return true;
     });
 
-    // ページネーション
-    const items = filtered.slice(offset, offset + limit);
-    const hasMore = offset + limit < filtered.length;
+    // シャッフル（フィルターなし時）
+    const items = shuffle ? shuffleArray(filtered) : filtered;
 
     return Response.json({
       items,
-      total: filtered.length,
-      hasMore,
-      offset,
+      total: items.length,
+      hasMore: false,
     });
   } catch (error) {
     console.error("[API/stores] Error:", error);
