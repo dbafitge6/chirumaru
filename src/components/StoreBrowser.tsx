@@ -233,8 +233,8 @@ export default function StoreBrowser({
                   aria-pressed={active}
                   className={`shrink-0 whitespace-nowrap border-b-2 pb-2 pt-1 text-sm font-medium tracking-wide transition-colors ${
                     active
-                      ? "border-rust text-ink"
-                      : "border-transparent text-graphite hover:text-ink"
+                      ? "border-[#a8481f] text-[#211c17]"
+                      : "border-transparent text-[#6b6255] hover:text-[#211c17]"
                   }`}
                 >
                   {tag}
@@ -276,7 +276,7 @@ export default function StoreBrowser({
                       aria-pressed={active}
                       className={`rounded-full border px-3 py-1.5 text-xs font-medium tracking-wide transition-colors ${
                         active
-                          ? "border-ink bg-ink text-paper"
+                          ? "border-ink bg-[#211c17] text-paper"
                           : "border-line bg-paper text-graphite hover:border-ink/40 hover:text-ink"
                       }`}
                     >
