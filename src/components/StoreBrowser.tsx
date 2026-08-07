@@ -276,8 +276,8 @@ export default function StoreBrowser({
                       aria-pressed={active}
                       className={`rounded-full border px-3 py-1.5 text-xs font-medium tracking-wide transition-colors ${
                         active
-                          ? "border-ink bg-[#211c17] text-paper"
-                          : "border-line bg-paper text-graphite hover:border-ink/40 hover:text-ink"
+                          ? "border-[#211c17] bg-[#211c17] text-[#f5f2ec]"
+                          : "border-[#ddd6c9] bg-[#f5f2ec] text-[#6b6255] hover:border-[#211c17]/40 hover:text-[#211c17]"
                       }`}
                     >
                       {tag}
