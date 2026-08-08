@@ -61,7 +61,6 @@ export default function StoreBrowser({
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setMounted(true);
     const saved = JSON.parse(localStorage.getItem('favorites') || '[]');
     setFavorites(saved);
 
@@ -69,6 +68,8 @@ export default function StoreBrowser({
     if (savedFilters.keyword) setKeyword(savedFilters.keyword);
     if (savedFilters.area) setArea(savedFilters.area);
     if (savedFilters.activeTags) setActiveTags(savedFilters.activeTags);
+
+    setMounted(true);
   }, []);
 
   useEffect(() => {
