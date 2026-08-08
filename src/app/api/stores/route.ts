@@ -23,6 +23,8 @@ export async function GET(request: Request) {
 
     // フィルタリング
     const kw = keyword.trim().toLowerCase();
+    console.log(`[API/stores] keyword="${keyword}", kw="${kw}", area="${area}", tags=${JSON.stringify(tags)}`);
+
     const filtered = stores.filter((s) => {
       if (area && area !== "すべて" && s.area !== area) return false;
       if (tags.length > 0 && !tags.every((t) => s.tags.includes(t))) return false;
@@ -32,6 +34,8 @@ export async function GET(request: Request) {
       }
       return true;
     });
+
+    console.log(`[API/stores] filtered: ${filtered.length} / total: ${stores.length}`);
 
     // シャッフル（フィルターなし時）
     const items = shuffle ? shuffleArray(filtered) : filtered;
