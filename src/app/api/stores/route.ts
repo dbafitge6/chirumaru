@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       if (area && area !== "すべて" && s.area !== area) return false;
       if (tags.length > 0 && !tags.every((t) => s.tags.includes(t))) return false;
       if (kw) {
-        const haystack = `${s.name} ${s.memo} ${s.menu} ${s.tags.join(" ")}`.toLowerCase();
+        const haystack = `${s.name} ${s.area} ${s.memo} ${s.menu} ${s.tags.join(" ")} ${s.address}`.toLowerCase();
         if (!haystack.includes(kw)) return false;
       }
       return true;
