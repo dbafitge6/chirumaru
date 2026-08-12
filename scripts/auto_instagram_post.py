@@ -128,18 +128,26 @@ try:
     cl.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
     print(f"✅ ログイン成功")
 
-    # キャプション作成
-    shops_text = "\n".join([f"{i+1}. {s['name']} ({s['area']})" for i, s in enumerate(selected_3)])
-    caption = f"""🌟 新潟のカフェ探し、今週の 3 店舗 🌟
+    # キャプション作成（改行を明確に）
+    caption_lines = [
+        "🌟 新潟のカフェ探し、今週の 3 店舗 🌟",
+        "",
+    ]
+    for i, s in enumerate(selected_3, 1):
+        caption_lines.append(f"{i}️⃣ {s['name']}")
+        caption_lines.append(f"   📍 {s['area']}")
+        caption_lines.append("")
 
-{shops_text}
+    caption_lines.extend([
+        "ちるまるで毎週新しいお店を紹介🎉",
+        "気になったお店があれば、ぜひ訪れてみてください☕",
+        "",
+        "📸 @chiru_maru_",
+        "",
+        "#新潟 #新潟カフェ #新潟グルメ #カフェ好きさんと繋がりたい #隠れ家カフェ"
+    ])
 
-ちるまるにいがたで毎週新しいお店を紹介🎉
-気になったお店があれば、ぜひ訪れてみてください☕
-
-📸 @chiru_maru_
-
-#新潟 #新潟カフェ #新潟グルメ #カフェ好きさんと繋がりたい #隠れ家カフェ"""
+    caption = "\n".join(caption_lines)
 
     print(f"\n📝 キャプション:")
     print(caption)
