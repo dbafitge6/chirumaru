@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install requests
+          npm install -g postiz
 
       - name: Check if 2 days passed
         id: check_interval
