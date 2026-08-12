@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 ちるまる Instagram 自動投稿システム
-22日ごとに店舗を選択 → Postiz経由で投稿
+2日ごとに異なる3店舗を選択 → Postiz経由で投稿
 """
 
 import os
 import json
 import random
 import subprocess
+import sys
 from pathlib import Path
 from datetime import datetime
 import requests
@@ -23,7 +24,7 @@ VIDEO_URL = "https://uploads.postiz.com/Dw9DWadyRH.mp4"
 if not all([AIRTABLE_TOKEN, POSTIZ_API_KEY]):
     print("❌ エラー: 環境変数が設定されていません")
     print("   AIRTABLE_TOKEN, POSTIZ_API_KEY を設定してください")
-    exit(1)
+    sys.exit(1)
 
 OUTPUT_DIR = Path(__file__).parent.parent / "generated_videos"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -38,11 +39,23 @@ TYPO_MAP = {
     '弌彦': '弥彦',
 }
 
+# ネガティブ語リスト
+NEGATIVE_WORDS = ['不快', 'まずい', '汚い', '最悪', 'うるさい', '高い', 'ぼったくり']
+
 def fix_typos(text):
     """テキストから誤字を修正"""
     for typo, correct in TYPO_MAP.items():
         text = text.replace(typo, correct)
     return text
+
+def check_content_safety(text):
+    """コンテンツの安全性チェック"""
+    if '/' in text:
+        raise ValueError(f"❌ エラー: テキストに '/' が含まれています（Canva表示バグの原因）\n{text}")
+
+    for word in NEGATIVE_WORDS:
+        if word in text:
+            raise ValueError(f"❌ エラー: ネガティブ語 '{word}' が検出されました\n投稿を中止します\n{text}")
 
 print("=" * 70)
 print("🎬 Instagram 自動投稿システム開始")
@@ -65,7 +78,7 @@ try:
 
         if response.status_code != 200:
             print(f"❌ API エラー: {response.status_code}")
-            exit(1)
+            sys.exit(1)
 
         data = response.json()
         all_records.extend(data.get('records', []))
@@ -118,7 +131,7 @@ except Exception as e:
     print(f"❌ エラー: {e}")
     exit(1)
 
-# Step 2: キャプション作成（誤字修正含む）
+# Step 2: キャプション作成（誤字修正・安全性チェック含む）
 print("\n【Step 2】キャプション作成")
 print("=" * 70)
 
@@ -149,6 +162,20 @@ caption = fix_typos(caption)
 print(f"\n📝 キャプション:")
 print(caption)
 
+# 安全性チェック
+print("\n【Step 2.5】コンテンツ安全性チェック")
+print("=" * 70)
+try:
+    check_content_safety(caption)
+    for shop in selected_3:
+        check_content_safety(shop['name'])
+        if shop['description']:
+            check_content_safety(shop['description'])
+    print("✅ 安全性チェック合格")
+except ValueError as e:
+    print(str(e))
+    sys.exit(1)
+
 # Step 3: Postiz で投稿
 print("\n【Step 3】Postiz で投稿")
 print("=" * 70)
@@ -164,18 +191,23 @@ try:
         '-i', INSTAGRAM_INTEGRATION_ID
     ]
 
-    result = subprocess.run(postiz_cmd, capture_output=True, text=True)
+    result = subprocess.run(postiz_cmd, capture_output=True, text=True, timeout=30)
 
     if result.returncode == 0:
         print(f"✅ 投稿成功！")
         print(result.stdout)
     else:
-        print(f"❌ Postiz エラー: {result.stderr}")
-        exit(1)
+        print(f"❌ Postiz エラー")
+        print(f"stderr: {result.stderr}")
+        print(f"stdout: {result.stdout}")
+        sys.exit(1)
 
+except subprocess.TimeoutExpired:
+    print(f"❌ エラー: Postiz コマンドがタイムアウト（30秒以上）")
+    sys.exit(1)
 except Exception as e:
     print(f"❌ エラー: {e}")
-    exit(1)
+    sys.exit(1)
 
 print("\n" + "=" * 70)
 print("✅ 自動投稿完了！")
