@@ -25,7 +25,7 @@ if not all([API_TOKEN, INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD]):
     print("   AIRTABLE_TOKEN, INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD を設定してください")
     exit(1)
 
-OUTPUT_DIR = Path("/Users/kobayashikazuya/chirumaru-repo/generated_videos")
+OUTPUT_DIR = Path(__file__).parent.parent / "generated_videos"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 HISTORY_FILE = OUTPUT_DIR / "instagram_post_history.json"
