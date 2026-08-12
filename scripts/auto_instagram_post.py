@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ちるまる Instagram 自動投稿システム
-2日ごとに店舗を選択 → 動画生成 → 投稿
+22日ごとに店舗を選択 → Postiz経由で投稿
 """
 
 import os
@@ -10,19 +10,19 @@ import random
 import subprocess
 from pathlib import Path
 from datetime import datetime
-from instagrapi import Client
 import requests
 
 # 設定
 BASE_ID = "appyyoKM7RprQRht8"
 TABLE_NAME = "Stores"
-API_TOKEN = os.environ.get("AIRTABLE_TOKEN")
-INSTAGRAM_USERNAME = os.environ.get("INSTAGRAM_USERNAME")
-INSTAGRAM_PASSWORD = os.environ.get("INSTAGRAM_PASSWORD")
+AIRTABLE_TOKEN = os.environ.get("AIRTABLE_TOKEN")
+POSTIZ_API_KEY = os.environ.get("POSTIZ_API_KEY")
+INSTAGRAM_INTEGRATION_ID = "cmsopxrcz024opo0ygfgl0m4q"
+VIDEO_URL = "https://uploads.postiz.com/Dw9DWadyRH.mp4"
 
-if not all([API_TOKEN, INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD]):
-    print("❌ エラー: GitHub Secrets が設定されていません")
-    print("   AIRTABLE_TOKEN, INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD を設定してください")
+if not all([AIRTABLE_TOKEN, POSTIZ_API_KEY]):
+    print("❌ エラー: 環境変数が設定されていません")
+    print("   AIRTABLE_TOKEN, POSTIZ_API_KEY を設定してください")
     exit(1)
 
 OUTPUT_DIR = Path(__file__).parent.parent / "generated_videos"
@@ -30,6 +30,19 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 HISTORY_FILE = OUTPUT_DIR / "instagram_post_history.json"
 FRANCHISE_CHAINS = ['ドトール', 'タリーズ', 'スターバックス', 'コメダ']
+
+# 誤字辞書
+TYPO_MAP = {
+    '情緒い': '情緒あ',
+    '穿場': '穴場',
+    '弌彦': '弥彦',
+}
+
+def fix_typos(text):
+    """テキストから誤字を修正"""
+    for typo, correct in TYPO_MAP.items():
+        text = text.replace(typo, correct)
+    return text
 
 print("=" * 70)
 print("🎬 Instagram 自動投稿システム開始")
@@ -40,7 +53,7 @@ print("\n【Step 1】Airtable から店舗を選択")
 print("=" * 70)
 
 url = f"https://api.airtable.com/v0/{BASE_ID}/{TABLE_NAME}"
-headers = {"Authorization": f"Bearer {API_TOKEN}"}
+headers = {"Authorization": f"Bearer {AIRTABLE_TOKEN}"}
 
 all_records = []
 offset = None
@@ -74,7 +87,7 @@ try:
                 'id': record['id'],
                 'name': name,
                 'area': fields.get('Area', 'Unknown'),
-                'tags': fields.get('Tags', '').split(',')[0] if fields.get('Tags') else 'Unknown'
+                'description': fields.get('Description', '')
             })
 
     print(f"✅ フランチャイズ除外: {len(shops_list)} 店舗")
@@ -105,63 +118,63 @@ except Exception as e:
     print(f"❌ エラー: {e}")
     exit(1)
 
-# Step 2: 動画を生成（簡易版）
-print("\n【Step 2】動画を生成")
+# Step 2: キャプション作成（誤字修正含む）
+print("\n【Step 2】キャプション作成")
 print("=" * 70)
 
-# 前回作成した動画を再利用
-video_path = OUTPUT_DIR / "test_reels.mp4"
-if not video_path.exists():
-    print(f"❌ 動画ファイルが見つかりません: {video_path}")
-    print("   最初に video を手動で生成してください")
-    exit(1)
+caption_lines = [
+    "🌟 新潟のカフェ探し 🌟",
+    "",
+]
+for i, s in enumerate(selected_3, 1):
+    caption_lines.append(f"{s['name']}")
+    caption_lines.append(f"📍 {s['area']}")
+    if s['description']:
+        desc = fix_typos(s['description'])
+        caption_lines.append(f"{desc}")
+    caption_lines.append("")
 
-print(f"✅ 動画ファイル確認: {video_path}")
+caption_lines.extend([
+    "ちるまるで毎日新しいお店を紹介🎉",
+    "気になったお店があれば、ぜひ訪れてみてください☕",
+    "",
+    "📸 @chiru_maru_",
+    "",
+    "#新潟 #新潟カフェ #新潟グルメ #カフェ好きさんと繋がりたい #隠れ家カフェ #chirumaru"
+])
 
-# Step 3: Instagram に投稿
-print("\n【Step 3】Instagram に投稿")
+caption = "\n".join(caption_lines)
+caption = fix_typos(caption)
+
+print(f"\n📝 キャプション:")
+print(caption)
+
+# Step 3: Postiz で投稿
+print("\n【Step 3】Postiz で投稿")
 print("=" * 70)
 
 try:
-    print(f"📱 Instagram にログイン中...")
-    cl = Client()
-    cl.login(INSTAGRAM_USERNAME, INSTAGRAM_PASSWORD)
-    print(f"✅ ログイン成功")
-
-    # キャプション作成（改行を明確に）
-    caption_lines = [
-        "🌟 新潟のカフェ探し、今週の 3 店舗 🌟",
-        "",
+    # Postiz API で投稿作成
+    postiz_cmd = [
+        'postiz', 'posts:create',
+        '-c', caption,
+        '-m', VIDEO_URL,
+        '-s', datetime.utcnow().isoformat() + 'Z',
+        '--settings', '{"post_type":"post"}',
+        '-i', INSTAGRAM_INTEGRATION_ID
     ]
-    for i, s in enumerate(selected_3, 1):
-        caption_lines.append(f"{i}️⃣ {s['name']}")
-        caption_lines.append(f"   📍 {s['area']}")
-        caption_lines.append("")
 
-    caption_lines.extend([
-        "ちるまるで毎週新しいお店を紹介🎉",
-        "気になったお店があれば、ぜひ訪れてみてください☕",
-        "",
-        "📸 @chiru_maru_",
-        "",
-        "#新潟 #新潟カフェ #新潟グルメ #カフェ好きさんと繋がりたい #隠れ家カフェ"
-    ])
+    result = subprocess.run(postiz_cmd, capture_output=True, text=True)
 
-    caption = "\n".join(caption_lines)
-
-    print(f"\n📝 キャプション:")
-    print(caption)
-
-    # 投稿
-    print(f"\n📤 投稿中...")
-    media = cl.clip_upload(path=str(video_path), caption=caption)
-
-    print(f"✅ 投稿成功！")
-    print(f"   Post ID: {media.id}")
-    print(f"   URL: https://www.instagram.com/p/{media.code}/")
+    if result.returncode == 0:
+        print(f"✅ 投稿成功！")
+        print(result.stdout)
+    else:
+        print(f"❌ Postiz エラー: {result.stderr}")
+        exit(1)
 
 except Exception as e:
-    print(f"❌ Instagram 投稿エラー: {e}")
+    print(f"❌ エラー: {e}")
     exit(1)
 
 print("\n" + "=" * 70)

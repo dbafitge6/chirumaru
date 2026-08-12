@@ -1,0 +1,69 @@
+name: Auto Instagram Post (22 days interval)
+
+on:
+  schedule:
+    # 毎日 03:00 UTC (12:00 JST) に実行
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Check if 22 days passed
+        id: check_interval
+        run: |
+          HISTORY_FILE="generated_videos/instagram_post_history.json"
+
+          if [ ! -f "$HISTORY_FILE" ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "✅ 初回実行"
+            exit 0
+          fi
+
+          LAST_RUN=$(grep -o '"timestamp": "[^"]*"' "$HISTORY_FILE" | cut -d'"' -f4 | head -1)
+          LAST_DATE=$(date -d "$LAST_RUN" +%s)
+          TODAY=$(date +%s)
+          DIFF_DAYS=$(( ($TODAY - $LAST_DATE) / 86400 ))
+
+          if [ $DIFF_DAYS -ge 22 ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+            echo "✅ 22日以上経過。実行します ($DIFF_DAYS days)"
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            echo "⏳ まだ待機中。次回実行まで $(( 22 - $DIFF_DAYS ))日"
+          fi
+
+      - name: Run auto post script
+        if: steps.check_interval.outputs.should_run == 'true'
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
+        run: python scripts/auto_instagram_post.py
+
+      - name: Commit changes
+        if: steps.check_interval.outputs.should_run == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add generated_videos/instagram_post_history.json
+          git commit -m "chore: update instagram post history" || true
+
+      - name: Push changes
+        if: steps.check_interval.outputs.should_run == 'true'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
