@@ -1,0 +1,32 @@
+name: Fix Lunch Tags
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-tags:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run lunch tag fix script
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+        run: python3 scripts/fix_lunch_and_parking_tags.py
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lunch-tag-fix-logs
+          path: logs/lunch_tag_fix.txt
