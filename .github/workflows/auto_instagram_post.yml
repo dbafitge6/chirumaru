@@ -1,4 +1,5 @@
 name: Auto Instagram Post (Daily)
+# Reset cache - 2026-08-14
 
 on:
   schedule:
