@@ -62,11 +62,19 @@ jobs:
           git config --local user.name "GitHub Action"
           git add generated_videos/instagram_post_history.json
           git add data/posted_stores.json
-          git commit -m "chore: update instagram post records"
-          if [ $? -ne 0 ]; then
+
+          # Check if there are changes to commit
+          if git diff --cached --quiet; then
+            echo "ℹ️  No changes to commit (skipping)"
+            exit 0
+          fi
+
+          # Commit changes and check for errors
+          if ! git commit -m "chore: update instagram post records"; then
             echo "❌ Error: Failed to commit changes"
             exit 1
           fi
+          echo "✅ Changes committed successfully"
 
       - name: Push changes
         if: steps.check_interval.outputs.should_run == 'true'
