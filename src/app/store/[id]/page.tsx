@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getStoreWithNeighbors } from "@/lib/airtable";
 import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
 
 export const dynamic = "force-dynamic";
 
@@ -265,8 +264,6 @@ export default async function StorePage({
           </div>
         </div>
       </main>
-
-      <SiteFooter />
     </>
   );
 }

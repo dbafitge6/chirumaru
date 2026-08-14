@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import type { Store } from '@/lib/types';
 import StoreCard from '@/components/StoreCard';
 import SiteHeader from '@/components/SiteHeader';
-import SiteFooter from '@/components/SiteFooter';
 
 export default function AccountPage() {
   const [favorites, setFavorites] = useState<string[]>([]);
@@ -130,7 +129,6 @@ export default function AccountPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
     </>
   );
 }

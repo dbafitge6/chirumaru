@@ -1,7 +1,6 @@
 import { getAllStores } from "@/lib/airtable";
 import StoreBrowser from "@/components/StoreBrowser";
 import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
 
 export const dynamic = "force-dynamic";
 
@@ -58,8 +57,6 @@ export default async function HomePage() {
           )}
         </section>
       </main>
-
-      <SiteFooter />
     </>
   );
 }

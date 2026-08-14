@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import SiteHeader from '@/components/SiteHeader';
-import SiteFooter from '@/components/SiteFooter';
 
 export default function PasswordResetPage() {
   const [step, setStep] = useState<'email' | 'reset'>('email');
@@ -186,7 +185,6 @@ export default function PasswordResetPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
     </>
   );
 }

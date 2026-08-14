@@ -6,7 +6,6 @@ import type { Store } from '@/lib/types';
 import { getGeolocation, calculateDistance } from '@/lib/geolocation';
 import StoreCard from '@/components/StoreCard';
 import SiteHeader from '@/components/SiteHeader';
-import SiteFooter from '@/components/SiteFooter';
 
 export default function NearbyPage() {
   const router = useRouter();
@@ -191,7 +190,6 @@ export default function NearbyPage() {
           </div>
         </section>
       </main>
-      <SiteFooter />
     </>
   );
 }
