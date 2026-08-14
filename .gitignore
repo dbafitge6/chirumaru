@@ -10,5 +10,8 @@ npm-debug.log*
 *.key
 *.pem
 ga-service-account.json
-generated_videos/
+# Generated videos (but keep history)
+generated_videos/*.mp4
+generated_videos/*.mov
+generated_videos/*.avi
 generated_slides/
