@@ -19,11 +19,9 @@ const TRIVIA = [
 
 export default function StoreBrowser({
   areas,
-  featureTags,
   discoveryTags = [],
 }: {
   areas: string[];
-  featureTags: string[];
   discoveryTags?: string[];
 }) {
   const [keyword, setKeyword] = useState("");
@@ -268,7 +266,7 @@ export default function StoreBrowser({
             <div className="mt-5">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-graphite">タグで絞り込む</p>
               <div className="flex flex-wrap gap-2">
-                {menus.slice(0, 12).map((tag) => {
+                {menus.map((tag) => {
                   const active = activeTags.includes(tag);
                   return (
                     <button
