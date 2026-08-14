@@ -61,7 +61,12 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add generated_videos/instagram_post_history.json
-          git commit -m "chore: update instagram post history" || true
+          git add data/posted_stores.json
+          git commit -m "chore: update instagram post records"
+          if [ $? -ne 0 ]; then
+            echo "❌ Error: Failed to commit changes"
+            exit 1
+          fi
 
       - name: Push changes
         if: steps.check_interval.outputs.should_run == 'true'
