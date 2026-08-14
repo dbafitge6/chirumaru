@@ -10,3 +10,5 @@ npm-debug.log*
 *.key
 *.pem
 ga-service-account.json
+generated_videos/
+generated_slides/
