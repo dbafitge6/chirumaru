@@ -1,0 +1,473 @@
+{
+  "instagram_token_status": [
+    {
+      "timestamp": "2026-08-14T16:47:41.997899",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T16:54:52.262799",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T17:07:37.131593",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T17:24:27.406432",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T17:34:03.763519",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T17:53:49.301852",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T17:55:27.218402",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T17:55:45.628834",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-14T17:55:59.891436",
+      "status": "invalid",
+      "warning": "Token validation failed"
+    }
+  ],
+  "instagram_insights": [
+    {
+      "timestamp": "2026-08-14T17:55:59.891473",
+      "insights": [
+        {
+          "label": "Reach",
+          "percentageChange": 5,
+          "data": [
+            {
+              "total": 0,
+              "date": "2026-08-08"
+            },
+            {
+              "total": 0,
+              "date": "2026-08-09"
+            },
+            {
+              "total": 111,
+              "date": "2026-08-10"
+            },
+            {
+              "total": 215,
+              "date": "2026-08-11"
+            },
+            {
+              "total": 76,
+              "date": "2026-08-12"
+            },
+            {
+              "total": 134,
+              "date": "2026-08-13"
+            }
+          ]
+        },
+        {
+          "label": "Likes",
+          "percentageChange": 5,
+          "data": [
+            {
+              "total": 0,
+              "date": "2026-08-14"
+            }
+          ]
+        },
+        {
+          "label": "Views",
+          "percentageChange": 5,
+          "data": [
+            {
+              "total": 609,
+              "date": "2026-08-14"
+            }
+          ]
+        },
+        {
+          "label": "Comments",
+          "percentageChange": 5,
+          "data": [
+            {
+              "total": 0,
+              "date": "2026-08-14"
+            }
+          ]
+        },
+        {
+          "label": "Shares",
+          "percentageChange": 5,
+          "data": [
+            {
+              "total": 0,
+              "date": "2026-08-14"
+            }
+          ]
+        },
+        {
+          "label": "Saves",
+          "percentageChange": 5,
+          "data": [
+            {
+              "total": 1,
+              "date": "2026-08-14"
+            }
+          ]
+        },
+        {
+          "label": "Replies",
+          "percentageChange": 5,
+          "data": [
+            {
+              "total": 0,
+              "date": "2026-08-14"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ga4_site_metrics": [
+    {
+      "timestamp": "2026-08-14T16:47:41.997916",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T16:54:52.262814",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T17:07:37.131605",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T17:24:27.406444",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T17:34:03.763531",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T17:53:49.301864",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T17:55:27.218416",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T17:55:45.628846",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    },
+    {
+      "timestamp": "2026-08-14T17:55:59.891477",
+      "period": "last_90_days",
+      "sessions": 136,
+      "total_users": 41,
+      "screen_page_views": 1315
+    }
+  ],
+  "ga4_source_breakdown": [
+    {
+      "timestamp": "2026-08-14T16:47:41.997921",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T16:54:52.262818",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T17:07:37.131608",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T17:24:27.406448",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T17:34:03.763534",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T17:53:49.301867",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T17:55:27.218419",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T17:55:45.628848",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    },
+    {
+      "timestamp": "2026-08-14T17:55:59.891480",
+      "sources": [
+        {
+          "source": "(direct)",
+          "sessions": 98
+        },
+        {
+          "source": "google",
+          "sessions": 27
+        },
+        {
+          "source": "vercel.com",
+          "sessions": 10
+        },
+        {
+          "source": "(not set)",
+          "sessions": 1
+        },
+        {
+          "source": "m.facebook.com",
+          "sessions": 1
+        }
+      ]
+    }
+  ],
+  "_schema": {
+    "version": 2,
+    "description": "Append-only analytics data collection for ちるまる",
+    "instagram_token_status": {
+      "timestamp": "ISO 8601 datetime",
+      "status": "valid|invalid|missing|error",
+      "warning": "Warning message if applicable"
+    },
+    "instagram_insights": {
+      "timestamp": "Collection datetime (ISO 8601)",
+      "insights": [
+        {
+          "metric": "impressions|reach|engagement|saves|video_views|profile_visits",
+          "value": "numeric value",
+          "period": "day|week|month"
+        }
+      ]
+    },
+    "ga4_site_metrics": {
+      "timestamp": "Collection datetime (ISO 8601)",
+      "period": "last_90_days",
+      "sessions": "integer",
+      "total_users": "integer",
+      "screen_page_views": "integer"
+    },
+    "ga4_source_breakdown": {
+      "timestamp": "Collection datetime (ISO 8601)",
+      "sources": [
+        {
+          "source": "Traffic source (direct, google, etc.)",
+          "sessions": "integer"
+        }
+      ]
+    }
+  }
+}
