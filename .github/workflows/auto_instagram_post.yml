@@ -1,4 +1,4 @@
-name: Auto Instagram Post (22 days interval)
+name: Auto Instagram Post (Daily)
 
 on:
   schedule:
@@ -40,12 +40,12 @@ jobs:
           TODAY=$(date +%s)
           DIFF_DAYS=$(( ($TODAY - $LAST_DATE) / 86400 ))
 
-          if [ $DIFF_DAYS -ge 2 ]; then
+          if [ $DIFF_DAYS -ge 1 ]; then
             echo "should_run=true" >> $GITHUB_OUTPUT
-            echo "✅ 2日以上経過。実行します ($DIFF_DAYS days)"
+            echo "✅ 1日以上経過。実行します ($DIFF_DAYS days)"
           else
             echo "should_run=false" >> $GITHUB_OUTPUT
-            echo "⏳ まだ待機中。次回実行まで $(( 2 - $DIFF_DAYS ))日"
+            echo "⏳ まだ待機中。次回実行まで $(( 1 - $DIFF_DAYS ))日"
           fi
 
       - name: Run auto post script
