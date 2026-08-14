@@ -19,10 +19,19 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: |
-          pip install requests
-          npm install -g postiz
+          pip install --upgrade pip
+          pip install requests python-dotenv Pillow google-analytics-data google-auth
+
+      - name: Install system dependencies
+        run: |
+          # FFmpeg for video processing
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Postiz CLI
+        run: npm install -g postiz
 
       - name: Check if 2 days passed
         id: check_interval
