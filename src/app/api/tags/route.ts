@@ -1,22 +1,5 @@
 import { getAllStores } from "@/lib/airtable";
-
-const GENRE_TAGS = new Set([
-  "カフェ",
-  "パン屋",
-  "パン屋・ベーカリー",
-  "ベーカリー",
-  "スイーツ",
-  "スイーツ・洋菓子店",
-  "スイーツ・洋菓子",
-  "洋菓子店",
-  "和菓子",
-  "和菓子店",
-  "レストラン",
-  "レストラン・食堂",
-  "食堂",
-  "喫茶店",
-  "カフェ・喫茶",
-]);
+import { GENRE_TAGS, MAX_FEATURED_TAGS } from "@/lib/constants";
 
 export async function GET() {
   try {
@@ -37,11 +20,12 @@ export async function GET() {
     const menus = Array.from(tagCounts.entries())
       .filter(([_, count]) => count >= 2)
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 15)
+      .slice(0, MAX_FEATURED_TAGS)
       .map(([tag]) => tag);
 
     return Response.json({ menus });
   } catch (error) {
+    console.error("[/api/tags] Error:", error instanceof Error ? error.message : String(error));
     return Response.json(
       { error: "Failed to fetch tags" },
       { status: 500 }
