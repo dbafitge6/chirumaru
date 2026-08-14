@@ -34,6 +34,9 @@ BASE_ID = "appyyoKM7RprQRht8"
 TABLE_NAME = "Stores"
 AIRTABLE_TOKEN = os.environ.get("AIRTABLE_TOKEN")
 POSTIZ_API_KEY = os.environ.get("POSTIZ_API_KEY")
+print(f"DEBUG: AIRTABLE_TOKEN={'*' * 10 if AIRTABLE_TOKEN else 'EMPTY'}")
+print(f"DEBUG: POSTIZ_API_KEY={'*' * 10 if POSTIZ_API_KEY else 'EMPTY'}")
+print(f"DEBUG: All env keys with 'AIRTABLE' or 'POSTIZ': {[k for k in os.environ.keys() if 'AIRTABLE' in k or 'POSTIZ' in k]}")
 INSTAGRAM_INTEGRATION_ID = "cmsopxrcz024opo0ygfgl0m4q"
 VIDEO_URL = "https://uploads.postiz.com/Dw9DWadyRH.mp4"
 
