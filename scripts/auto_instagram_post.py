@@ -370,6 +370,7 @@ def generate_slides(hook_text, shops):
     slides.append(slide1)
 
     # 【2〜4枚目 店舗】
+    shop_total = len(shops)
     for i, shop in enumerate(shops):
         slide = Image.new("RGB", (1080, 1920), "#FBF1EA")
         draw = ImageDraw.Draw(slide)
@@ -379,20 +380,30 @@ def generate_slides(hook_text, shops):
         slide.paste(logo_mono, (55, 55), logo_mono)
 
         # タグライン（左揃え、x=285）
-        draw_text_with_wrapping(draw, tagline, (285, 118), font_medium_42, "#B4B4B4", 500, align="left", font_name="medium")
+        draw_text_with_wrapping(draw, tagline, (285, 118), font_medium_42, "#9C9C9C", 500, align="left", font_name="medium")
+
+        # 進捗バッジ（右上、店舗の何軒目かを示す丸バッジ。3店舗を視覚的に区別する目的）
+        badge_center = (975, 150)
+        badge_radius = 68
+        draw.ellipse(
+            [badge_center[0] - badge_radius, badge_center[1] - badge_radius,
+             badge_center[0] + badge_radius, badge_center[1] + badge_radius],
+            fill="#5C4139"
+        )
+        draw.text(badge_center, f"{i + 1}/{shop_total}", font=font_medium_46, fill="#F7EDE5", anchor="mm")
 
         # 店名（y=700 が上端、幅900で中央x=540）- 積み上げ式計算開始
-        shop_name_height, _ = draw_text_with_wrapping(draw, shop['name'], (540, 700), font_bold_92, "#7A5A4C", 900, max_height=140, line_spacing=1.35, align="center", font_name="bold")
+        shop_name_height, _ = draw_text_with_wrapping(draw, shop['name'], (540, 700), font_bold_92, "#3D2418", 900, max_height=140, line_spacing=1.35, align="center", font_name="bold")
 
         # エリア（店名の下端 + 40px）
         area_y = 700 + shop_name_height + 40
-        area_height, _ = draw_text_with_wrapping(draw, shop['area'], (540, area_y), font_medium_48, "#C09A88", 900, max_height=100, line_spacing=1.35, align="center", font_name="medium")
+        area_height, _ = draw_text_with_wrapping(draw, shop['area'], (540, area_y), font_medium_48, "#8A6250", 900, max_height=100, line_spacing=1.35, align="center", font_name="medium")
 
         # 一言（エリアの下端 + 90px、幅840で中央x=540）
         # 一言が空の場合は描画をスキップ
         if shop['desc']:
             desc_y = area_y + area_height + 90
-            draw_text_with_wrapping(draw, shop['desc'], (540, desc_y), font_medium_52, "#8A6A5C", 840, max_height=400, line_spacing=1.6, align="center", font_name="medium")
+            draw_text_with_wrapping(draw, shop['desc'], (540, desc_y), font_medium_52, "#5C4139", 840, max_height=400, line_spacing=1.6, align="center", font_name="medium")
 
         slides.append(slide)
 
