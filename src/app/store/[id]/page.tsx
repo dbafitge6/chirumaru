@@ -175,7 +175,7 @@ export default async function StorePage({
                     href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full bg-terracotta-btn px-5 py-2.5 text-sm font-medium text-white hover:bg-clay transition-colors text-center"
+                    className="rounded-full bg-clay px-5 py-2.5 text-sm font-medium text-white hover:bg-umber transition-colors text-center"
                   >
                     Googleマップで開く
                   </a>
@@ -200,17 +200,6 @@ export default async function StorePage({
                   📷 写真を投稿する
                 </a>
               </div>
-
-              {store.photoUrls.length > 1 && (
-                <div className="mt-6 overflow-hidden rounded-2xl">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={store.photoUrls[store.photoUrls.length - 1]}
-                    alt={`${store.name}の食べ物写真`}
-                    className="w-full h-64 object-cover"
-                  />
-                </div>
-              )}
 
               {mapEmbedUrl && (
                 <div className="mt-6 overflow-hidden rounded-2xl border border-umber/10">
