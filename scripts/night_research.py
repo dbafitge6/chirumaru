@@ -18,7 +18,7 @@ os.makedirs(RESEARCH_RESULTS_DIR, exist_ok=True)
 def get_new_shops_research() -> Dict[str, Any]:
     """Research newly added shops and check for duplicates"""
     try:
-        airtable_pat = os.getenv('AIRTABLE_PAT')
+        airtable_pat = os.getenv('AIRTABLE_TOKEN')
         base_id = 'appyyoKM7RprQRht8'
         table_id = 'tblcOdcqCxzb7kX0e'
 
@@ -58,7 +58,7 @@ def get_instagram_performance() -> Dict[str, Any]:
     """Analyze Instagram post performance"""
     try:
         token = os.getenv('INSTAGRAM_GRAPH_TOKEN')
-        account_id = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')
+        account_id = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID', '17841413170142085')
 
         url = f'https://graph.instagram.com/v18.0/{account_id}/insights'
         params = {
@@ -91,7 +91,7 @@ def get_instagram_performance() -> Dict[str, Any]:
 def get_ga4_analytics() -> Dict[str, Any]:
     """Get GA4 website analytics"""
     try:
-        property_id = os.getenv('GA4_PROPERTY_ID')
+        property_id = os.getenv('GA4_PROPERTY_ID', '547703308')
 
         client = BetaAnalyticsDataClient()
 
