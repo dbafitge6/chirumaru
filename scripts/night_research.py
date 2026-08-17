@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Night Research Script - Automated daily research of new shops, Instagram performance, and market trends
+Night Research Script - Automated daily research of Instagram performance and website analytics
 """
 
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 from typing import Dict, Any
 import requests
@@ -15,118 +16,122 @@ from google.analytics.data_v1beta.types import RunReportRequest, Dimension, Metr
 RESEARCH_RESULTS_DIR = os.path.join(os.path.dirname(__file__), '..', 'research-results')
 os.makedirs(RESEARCH_RESULTS_DIR, exist_ok=True)
 
-def get_new_shops_research() -> Dict[str, Any]:
-    """Research newly added shops and check for duplicates"""
-    try:
-        airtable_pat = os.getenv('AIRTABLE_PAT')
-        base_id = 'appyyoKM7RprQRht8'
-        table_id = 'tblcOdcqCxzb7kX0e'
+def check_airtable_new_shops() -> Dict[str, Any]:
+    """Check for newly added shops in Airtable (informational only, does not block)"""
+    airtable_pat = os.getenv('AIRTABLE_PAT')
+    if not airtable_pat:
+        raise ValueError("AIRTABLE_PAT environment variable not set")
 
-        headers = {'Authorization': f'Bearer {airtable_pat}'}
-        url = f'https://api.airtable.com/v0/{base_id}/{table_id}'
+    base_id = 'appyyoKM7RprQRht8'
+    table_id = 'tblcOdcqCxzb7kX0e'
 
-        # Get records created in last 24 hours
-        yesterday = (datetime.utcnow() - timedelta(days=1)).isoformat()
-        response = requests.get(
-            url,
-            headers=headers,
-            params={'filterByFormula': f'CREATED_TIME() > "{yesterday}"'}
-        )
+    headers = {'Authorization': f'Bearer {airtable_pat}'}
+    url = f'https://api.airtable.com/v0/{base_id}/{table_id}'
 
-        records = response.json().get('records', [])
-        return {
-            'type': 'new_shops',
-            'count': len(records),
-            'shops': [
-                {
-                    'name': r['fields'].get('Shop Name', 'N/A'),
-                    'area': r['fields'].get('Area', 'N/A'),
-                    'created_at': r['createdTime']
-                }
-                for r in records
-            ]
-        }
-    except Exception as e:
-        return {
-            'type': 'new_shops',
-            'error': str(e),
-            'count': 0,
-            'shops': []
-        }
+    yesterday = (datetime.utcnow() - timedelta(days=1)).isoformat()
+    response = requests.get(
+        url,
+        headers=headers,
+        params={'filterByFormula': f'CREATED_TIME() > "{yesterday}"'}
+    )
+
+    if response.status_code != 200:
+        raise RuntimeError(f"Airtable API error: {response.status_code} {response.text}")
+
+    data = response.json()
+    if 'error' in data:
+        raise RuntimeError(f"Airtable API error: {data['error']}")
+
+    records = data.get('records', [])
+    return {
+        'type': 'new_shops',
+        'count': len(records),
+        'shops': [
+            {
+                'name': r['fields'].get('Store Name', 'N/A'),
+                'area': r['fields'].get('Area', 'N/A'),
+                'created_at': r['createdTime']
+            }
+            for r in records
+        ]
+    }
 
 def get_instagram_performance() -> Dict[str, Any]:
-    """Analyze Instagram post performance"""
-    try:
-        token = os.getenv('INSTAGRAM_GRAPH_TOKEN')
-        account_id = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')
+    """Fetch Instagram Insights metrics"""
+    token = os.getenv('INSTAGRAM_GRAPH_TOKEN')
+    account_id = os.getenv('INSTAGRAM_BUSINESS_ACCOUNT_ID')
 
-        url = f'https://graph.instagram.com/v18.0/{account_id}/insights'
-        params = {
-            'metric': 'impressions,reach,profile_views',
-            'period': 'day',
-            'access_token': token
-        }
+    if not token or not account_id:
+        raise ValueError("INSTAGRAM_GRAPH_TOKEN or INSTAGRAM_BUSINESS_ACCOUNT_ID not set")
 
-        response = requests.get(url, params=params)
-        data = response.json().get('data', [])
+    url = f'https://graph.instagram.com/v18.0/{account_id}/insights'
+    params = {
+        'metric': 'impressions,reach,profile_views',
+        'period': 'day',
+        'access_token': token
+    }
 
-        return {
-            'type': 'instagram_performance',
-            'metrics': [
-                {
-                    'name': m.get('name'),
-                    'value': m.get('values', [{}])[0].get('value', 0),
-                    'period': m.get('period')
-                }
-                for m in data
-            ]
-        }
-    except Exception as e:
-        return {
-            'type': 'instagram_performance',
-            'error': str(e),
-            'metrics': []
-        }
+    response = requests.get(url, params=params)
+    if response.status_code != 200:
+        raise RuntimeError(f"Instagram API error: {response.status_code} {response.text}")
+
+    data = response.json()
+    if 'error' in data:
+        raise RuntimeError(f"Instagram API error: {data['error']}")
+
+    metrics = data.get('data', [])
+    if not metrics:
+        raise RuntimeError("No Instagram metrics data returned")
+
+    return {
+        'type': 'instagram_performance',
+        'metrics': [
+            {
+                'name': m.get('name'),
+                'value': m.get('values', [{}])[0].get('value', 0),
+                'period': m.get('period')
+            }
+            for m in metrics
+        ]
+    }
 
 def get_ga4_analytics() -> Dict[str, Any]:
-    """Get GA4 website analytics"""
-    try:
-        property_id = os.getenv('GA4_PROPERTY_ID')
+    """Fetch GA4 website analytics for the last 7 days"""
+    property_id = os.getenv('GA4_PROPERTY_ID')
+    if not property_id:
+        raise ValueError("GA4_PROPERTY_ID environment variable not set")
 
-        client = BetaAnalyticsDataClient()
+    client = BetaAnalyticsDataClient()
 
-        request = RunReportRequest(
-            property=f"properties/{property_id}",
-            date_ranges=[{'start_date': '7daysAgo', 'end_date': 'today'}],
-            dimensions=[Dimension(name='date')],
-            metrics=[
-                Metric(name='sessions'),
-                Metric(name='users'),
-                Metric(name='engagedSessions')
-            ]
-        )
+    request = RunReportRequest(
+        property=f"properties/{property_id}",
+        date_ranges=[{'start_date': '7daysAgo', 'end_date': 'today'}],
+        dimensions=[Dimension(name='date')],
+        metrics=[
+            Metric(name='sessions'),
+            Metric(name='users'),
+            Metric(name='engagedSessions')
+        ]
+    )
 
-        response = client.run_report(request)
+    response = client.run_report(request)
 
-        return {
-            'type': 'ga4_analytics',
-            'period': 'last_7_days',
-            'rows': [
-                {
-                    'date': row.dimension_values[0].value,
-                    'sessions': row.metric_values[0].value,
-                    'users': row.metric_values[1].value,
-                    'engaged_sessions': row.metric_values[2].value
-                }
-                for row in response.rows
-            ]
-        }
-    except Exception as e:
-        return {
-            'type': 'ga4_analytics',
-            'error': str(e),
-            'rows': []
-        }
+    if not response.rows:
+        raise RuntimeError("No GA4 analytics data returned for the specified period")
+
+    return {
+        'type': 'ga4_analytics',
+        'period': 'last_7_days',
+        'rows': [
+            {
+                'date': row.dimension_values[0].value,
+                'sessions': row.metric_values[0].value,
+                'users': row.metric_values[1].value,
+                'engaged_sessions': row.metric_values[2].value
+            }
+            for row in response.rows
+        ]
+    }
 
 def get_market_trends() -> Dict[str, Any]:
     """Research market trends (placeholder)"""
@@ -150,19 +155,57 @@ def save_research_results(data: Dict[str, Any]) -> str:
 def main():
     print("🌙 Starting night research...")
 
+    results = []
+    errors = []
+
+    # Fetch Instagram Insights (required)
+    try:
+        print("  Fetching Instagram Insights...")
+        results.append(get_instagram_performance())
+        print("    ✓ Instagram Insights fetched")
+    except Exception as e:
+        error_msg = f"Instagram Insights failed: {str(e)}"
+        print(f"    ✗ {error_msg}")
+        errors.append(error_msg)
+
+    # Fetch GA4 Analytics (required)
+    try:
+        print("  Fetching GA4 Analytics...")
+        results.append(get_ga4_analytics())
+        print("    ✓ GA4 Analytics fetched")
+    except Exception as e:
+        error_msg = f"GA4 Analytics failed: {str(e)}"
+        print(f"    ✗ {error_msg}")
+        errors.append(error_msg)
+
+    # Check Airtable for new shops (informational)
+    try:
+        print("  Checking Airtable for new shops...")
+        results.append(check_airtable_new_shops())
+        print("    ✓ Airtable check complete")
+    except Exception as e:
+        print(f"    ⚠ Airtable check failed (non-critical): {str(e)}")
+
+    # Check for critical errors
+    if errors:
+        print(f"\n❌ Research failed: {len(errors)} critical error(s)")
+        for error in errors:
+            print(f"   - {error}")
+        sys.exit(1)
+
+    # Save results
     research_data = {
         'timestamp': datetime.now().isoformat(),
         'timezone': 'Asia/Tokyo',
-        'results': [
-            get_new_shops_research(),
-            get_instagram_performance(),
-            get_ga4_analytics(),
-            get_market_trends()
-        ]
+        'results': results
     }
 
-    filepath = save_research_results(research_data)
-    print(f"✅ Research complete. Results saved to {filepath}")
+    try:
+        filepath = save_research_results(research_data)
+        print(f"\n✅ Research complete. Results saved to {filepath}")
+    except Exception as e:
+        print(f"\n❌ Failed to save research results: {str(e)}")
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
