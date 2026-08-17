@@ -1,0 +1,50 @@
+name: Night Research (Daily)
+
+on:
+  schedule:
+    # 毎日 02:00 JST (17:00 UTC) に実行
+    - cron: '0 17 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests python-dotenv google-analytics-data google-auth airtable
+
+      - name: Run night research
+        env:
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+          INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+        run: python scripts/night_research.py
+
+      - name: Send research report
+        env:
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        run: python scripts/send_research_email.py fitge6dbal13@gmail.com
+
+      - name: Commit and push
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Night Research Bot"
+          git add research-results/
+          git commit -m "chore: update research results $(date -u +%Y-%m-%d)" || true
+          git push github main
