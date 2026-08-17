@@ -175,7 +175,7 @@ export default async function StorePage({
                     href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full border border-terracotta/40 bg-blush/40 px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush transition-colors text-center"
+                    className="rounded-full border border-terracotta/40 bg-cream px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush/40 transition-colors text-center"
                   >
                     Googleマップで開く
                   </a>
@@ -195,7 +195,7 @@ export default async function StorePage({
                   href={photoSubmitUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-full border border-terracotta/40 bg-blush px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush/80 transition-colors text-center"
+                  className="rounded-full border border-terracotta/40 bg-cream px-5 py-2.5 text-sm font-medium text-clay hover:bg-blush/40 transition-colors text-center"
                 >
                   📷 写真を投稿する
                 </a>
