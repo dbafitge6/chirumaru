@@ -29,16 +29,26 @@ jobs:
 
       - name: Run night research
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
           INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
-          INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
-          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          INSTAGRAM_BUSINESS_ACCOUNT_ID: "17841413170142085"
+          GA4_PROPERTY_ID: "547703308"
         run: python scripts/night_research.py
 
-      - name: Commit and push
+      - name: Commit changes
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "Night Research Bot"
           git add research-results/
-          git commit -m "chore: update research results $(date -u +%Y-%m-%d)" || true
-          git push github main
+
+          if git diff --cached --quiet; then
+            echo "ℹ️  No changes to commit (skipping)"
+            exit 0
+          fi
+
+          git commit -m "chore: update research results $(date -u +%Y-%m-%d)"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
