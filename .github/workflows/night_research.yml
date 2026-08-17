@@ -35,12 +35,6 @@ jobs:
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
         run: python scripts/night_research.py
 
-      - name: Send research report
-        env:
-          EMAIL_USER: ${{ secrets.EMAIL_USER }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-        run: python scripts/send_research_email.py fitge6dbal13@gmail.com
-
       - name: Commit and push
         run: |
           git config --local user.email "action@github.com"
