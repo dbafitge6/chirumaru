@@ -25,14 +25,15 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install requests python-dotenv google-analytics-data google-auth airtable
+          pip install requests python-dotenv google-analytics-data google-auth airtable anthropic
 
       - name: Run night research
         env:
-          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
           INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
-          INSTAGRAM_BUSINESS_ACCOUNT_ID: "17841413170142085"
-          GA4_PROPERTY_ID: "547703308"
+          INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python scripts/night_research.py
 
       - name: Commit changes

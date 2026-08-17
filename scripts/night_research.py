@@ -7,8 +7,9 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 import requests
+from anthropic import Anthropic
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest, Dimension, Metric
 
@@ -141,6 +142,73 @@ def get_market_trends() -> Dict[str, Any]:
         'trends': []
     }
 
+def generate_analysis_and_suggestions(instagram_data: Dict[str, Any], ga4_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Generate analysis and improvement suggestions using Claude"""
+    api_key = os.getenv('ANTHROPIC_API_KEY')
+    if not api_key:
+        print("    ⚠ ANTHROPIC_API_KEY not set, skipping analysis")
+        return {'type': 'analysis', 'suggestions': [], 'skipped': True}
+
+    client = Anthropic()
+
+    prompt = f"""
+You are a social media analytics expert for a bakery/cafe discovery website called "ちるまる" (Chirumaru).
+
+Analyze the following data and provide specific, actionable improvement suggestions:
+
+**Instagram Insights (today):**
+{json.dumps(instagram_data.get('metrics', []), ensure_ascii=False, indent=2)}
+
+**Website Analytics (last 7 days):**
+{json.dumps(ga4_data.get('rows', []), ensure_ascii=False, indent=2)}
+
+Based on this data, provide 2-3 concrete improvement suggestions. For each suggestion:
+1. **Problem:** What metric/trend indicates this issue?
+2. **Root cause:** Why might this be happening?
+3. **Suggestion:** What specific change to try?
+4. **Expected impact:** How could this improve metrics?
+5. **Implementation note:** If applicable, provide a code snippet or example (as Markdown)
+
+Format your response as a JSON array of suggestion objects. Keep suggestions focused, practical, and implementable.
+
+Example format:
+```json
+[
+  {{
+    "title": "Shorter hook text",
+    "problem": "Posts with long hook text have lower reach",
+    "root_cause": "Users scroll quickly; hooks >15 chars get less engagement",
+    "suggestion": "Test hook text limited to 15 characters or less",
+    "expected_impact": "Increase reach by 10-15%",
+    "implementation_note": "Example: '新潟のパン屋7選' instead of '新潟県のおすすめパン屋さんを7つ厳選して紹介'"
+  }}
+]
+```
+
+Return ONLY valid JSON array, no other text.
+"""
+
+    try:
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=1000,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        response_text = message.content[0].text.strip()
+
+        suggestions = json.loads(response_text)
+        return {
+            'type': 'analysis',
+            'suggestions': suggestions,
+            'timestamp': datetime.now().isoformat()
+        }
+    except Exception as e:
+        print(f"    ⚠ Analysis generation failed (non-critical): {str(e)}")
+        return {'type': 'analysis', 'suggestions': [], 'error': str(e)}
+
 def save_research_results(data: Dict[str, Any]) -> str:
     """Save research results to JSON file"""
     today = datetime.now().strftime('%Y-%m-%d')
@@ -157,11 +225,14 @@ def main():
 
     results = []
     errors = []
+    instagram_data = None
+    ga4_data = None
 
     # Fetch Instagram Insights (required)
     try:
         print("  Fetching Instagram Insights...")
-        results.append(get_instagram_performance())
+        instagram_data = get_instagram_performance()
+        results.append(instagram_data)
         print("    ✓ Instagram Insights fetched")
     except Exception as e:
         error_msg = f"Instagram Insights failed: {str(e)}"
@@ -171,7 +242,8 @@ def main():
     # Fetch GA4 Analytics (required)
     try:
         print("  Fetching GA4 Analytics...")
-        results.append(get_ga4_analytics())
+        ga4_data = get_ga4_analytics()
+        results.append(ga4_data)
         print("    ✓ GA4 Analytics fetched")
     except Exception as e:
         error_msg = f"GA4 Analytics failed: {str(e)}"
@@ -185,6 +257,16 @@ def main():
         print("    ✓ Airtable check complete")
     except Exception as e:
         print(f"    ⚠ Airtable check failed (non-critical): {str(e)}")
+
+    # Generate analysis and suggestions (optional)
+    if instagram_data and ga4_data:
+        try:
+            print("  Generating analysis and suggestions...")
+            analysis = generate_analysis_and_suggestions(instagram_data, ga4_data)
+            results.append(analysis)
+            print("    ✓ Analysis complete")
+        except Exception as e:
+            print(f"    ⚠ Analysis failed (non-critical): {str(e)}")
 
     # Check for critical errors
     if errors:
