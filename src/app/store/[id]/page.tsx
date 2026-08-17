@@ -175,7 +175,7 @@ export default async function StorePage({
                     href={mapSearchUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-full bg-clay px-5 py-2.5 text-sm font-medium text-white hover:bg-umber transition-colors text-center"
+                    className="rounded-full bg-umber px-5 py-2.5 text-sm font-medium text-white hover:bg-terracotta transition-colors text-center"
                   >
                     Googleマップで開く
                   </a>
