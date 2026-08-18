@@ -16,9 +16,9 @@ import requests
 def exchange_short_lived_to_long_lived(token, app_id, app_secret):
     """Exchange short-lived token to long-lived token"""
     try:
-        response = requests.get(
+        response = requests.post(
             'https://graph.facebook.com/v18.0/oauth/access_token',
-            params={
+            data={
                 'grant_type': 'fb_exchange_token',
                 'client_id': app_id,
                 'client_secret': app_secret,
