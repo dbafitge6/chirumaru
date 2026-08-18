@@ -2,14 +2,45 @@
 """
 Instagram Long-lived Token Refresh Script
 毎週実行して、トークン有効期限を確認し、必要に応じて自動更新
+短期トークンの場合は長期トークンに交換
 """
 
 import os
 import sys
 import json
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
+
+
+def exchange_short_lived_to_long_lived(token, app_id, app_secret):
+    """Exchange short-lived token to long-lived token"""
+    try:
+        response = requests.get(
+            'https://graph.facebook.com/v18.0/oauth/access_token',
+            params={
+                'grant_type': 'fb_exchange_token',
+                'client_id': app_id,
+                'client_secret': app_secret,
+                'access_token': token
+            },
+            timeout=5
+        )
+        data = response.json()
+
+        if 'error' in data:
+            error = data['error']
+            raise ValueError(f"Token exchange failed: {error.get('message', str(error))}")
+
+        new_token = data.get('access_token')
+        if not new_token:
+            raise ValueError("No access_token in exchange response")
+
+        return new_token
+
+    except Exception as e:
+        print(f"❌ Error exchanging token: {str(e)}")
+        return None
 
 
 def check_token_expiry(token):
@@ -131,6 +162,31 @@ def main():
 
     print(f"📅 Token expires at: {expires_dt.strftime('%Y-%m-%d %H:%M:%S UTC')}")
     print(f"⏱️  Days remaining: {days_remaining} days, {hours_remaining} hours\n")
+
+    # Check if token is short-lived (< 3 days)
+    if days_remaining < 3:
+        print(f"⚠️  Short-lived token detected (expires in {days_remaining} days)")
+        print("   Attempting to exchange for long-lived token...\n")
+
+        app_id = os.getenv('FACEBOOK_APP_ID')
+        app_secret = os.getenv('FACEBOOK_APP_SECRET')
+
+        if not app_id or not app_secret:
+            print("❌ FACEBOOK_APP_ID or FACEBOOK_APP_SECRET not set")
+            print("   Cannot exchange token. Continuing with refresh cycle.\n")
+        else:
+            new_token = exchange_short_lived_to_long_lived(token, app_id, app_secret)
+            if new_token:
+                print("✅ Token exchanged to long-lived format")
+                print("🔄 Updating GitHub Secrets...\n")
+                if update_github_secret(new_token):
+                    print("✅ Long-lived token saved to GitHub Secrets!\n")
+                    sys.exit(0)
+                else:
+                    print("❌ Failed to save token to GitHub Secrets\n")
+                    sys.exit(1)
+            else:
+                print("⚠️  Token exchange failed. Continuing with short-lived token.\n")
 
     if days_remaining > 7:
         print("✅ Token is valid for more than 7 days.")
