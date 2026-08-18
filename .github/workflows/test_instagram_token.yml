@@ -29,14 +29,47 @@ jobs:
             echo "✅ Token length looks reasonable"
           fi
 
+      - name: Verify token value integrity
+        env:
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+        run: |
+          echo "📋 Token integrity check..."
+          echo ""
+
+          FIRST_10=${INSTAGRAM_GRAPH_TOKEN:0:10}
+          LAST_10=${INSTAGRAM_GRAPH_TOKEN: -10}
+
+          echo "✅ Token first 10 chars: $FIRST_10"
+          echo "✅ Token last 10 chars: $LAST_10"
+          echo "✅ Contains newlines: $(echo -n "$INSTAGRAM_GRAPH_TOKEN" | wc -l)"
+
+      - name: Test simple endpoint (me)
+        env:
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+        run: |
+          echo ""
+          echo "🔍 Testing simple endpoint: /me?fields=id,name"
+          echo ""
+
+          # URL エンコード不要、curl は自動処理
+          curl -v -H "Authorization: Bearer $INSTAGRAM_GRAPH_TOKEN" \
+            "https://graph.instagram.com/me?fields=id,name" 2>&1 | tee /tmp/me_response.txt
+
+          echo ""
+          echo "Response body:"
+          tail -5 /tmp/me_response.txt | python3 -m json.tool 2>/dev/null || echo "(not JSON)"
+
       - name: Check token scopes and expiration
         env:
           INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
         run: |
-          echo "📋 Checking token metadata via Meta Graph API..."
+          echo ""
+          echo "📋 Checking token metadata via debug_token..."
           echo ""
 
-          RESPONSE=$(curl -s "https://graph.instagram.com/debug_token?input_token=$INSTAGRAM_GRAPH_TOKEN&access_token=$INSTAGRAM_GRAPH_TOKEN")
+          # debug_token の正しい構文を使用
+          RESPONSE=$(curl -s -X GET \
+            "https://graph.instagram.com/debug_token?input_token=${INSTAGRAM_GRAPH_TOKEN}&access_token=${INSTAGRAM_GRAPH_TOKEN}")
 
           echo "Raw response:"
           echo "$RESPONSE" | python3 -m json.tool
