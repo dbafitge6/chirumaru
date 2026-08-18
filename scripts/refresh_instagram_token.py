@@ -22,11 +22,11 @@ def exchange_short_lived_to_long_lived(token, app_id, app_secret):
             'grant_type': 'fb_exchange_token',
             'client_id': app_id,
             'client_secret': app_secret,
-            'access_token': token
+            'fb_exchange_token': token
         }
 
         # Log request details (mask secret)
-        masked_url = url + '?grant_type=fb_exchange_token&client_id=' + app_id + '&client_secret=***&access_token=***'
+        masked_url = url + '?grant_type=fb_exchange_token&client_id=' + app_id + '&client_secret=***&fb_exchange_token=***'
         print(f"   Request URL: {masked_url}")
 
         response = requests.get(url, params=params, timeout=5)
