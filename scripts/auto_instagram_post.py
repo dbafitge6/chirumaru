@@ -804,10 +804,12 @@ else:
 
         # Step 4.2: Postiz API で投稿作成
         print("\n📱 Instagram に投稿中...")
+        now_utc = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
         postiz_cmd = [
             'postiz', 'posts:create',
             '-c', caption,
             '-m', postiz_video_url,
+            '-s', now_utc,
             '--settings', '{"post_type":"post"}',
             '-i', INSTAGRAM_INTEGRATION_ID
         ]
