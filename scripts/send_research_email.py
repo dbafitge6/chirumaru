@@ -94,7 +94,7 @@ def format_research_report(data: dict) -> str:
                     <tr>
                         <td>{row.get('date', 'N/A')}</td>
                         <td>{row.get('sessions', 0)}</td>
-                        <td>{row.get('users', 0)}</td>
+                        <td>{row.get('active_users', row.get('users', 0))}</td>
                         <td>{row.get('engaged_sessions', 0)}</td>
                     </tr>
                     """
@@ -107,6 +107,25 @@ def format_research_report(data: dict) -> str:
             html += "<div class='section'><h2>🔍 市場トレンド</h2><p>{}</p></div>".format(
                 result.get('note', 'No data available')
             )
+
+        elif result_type == 'analysis':
+            html += "<div class='section'><h2>💡 AIによる改善提案</h2>"
+            if result.get('skipped'):
+                html += "<p>ANTHROPIC_API_KEY未設定のためスキップされました</p>"
+            elif result.get('suggestions'):
+                for s in result['suggestions']:
+                    html += f"""
+                    <div style="margin-bottom: 16px; padding: 12px; background: #f9f9f9; border-radius: 4px;">
+                        <h3 style="margin: 0 0 8px 0;">{s.get('title', 'N/A')}</h3>
+                        <p><strong>課題:</strong> {s.get('problem', 'N/A')}</p>
+                        <p><strong>原因:</strong> {s.get('root_cause', 'N/A')}</p>
+                        <p><strong>提案:</strong> {s.get('suggestion', 'N/A')}</p>
+                        <p><strong>期待効果:</strong> {s.get('expected_impact', 'N/A')}</p>
+                    </div>
+                    """
+            else:
+                html += "<p>提案なし</p>"
+            html += "</div>"
 
     html += """
     </body>
