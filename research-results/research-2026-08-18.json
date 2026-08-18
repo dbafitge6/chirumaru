@@ -1,0 +1,125 @@
+{
+  "timestamp": "2026-08-18T04:13:17.066496",
+  "timezone": "Asia/Tokyo",
+  "results": [
+    {
+      "type": "ga4_analytics",
+      "period": "last_7_days",
+      "rows": [
+        {
+          "date": "20260815",
+          "sessions": "8",
+          "active_users": "4",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260817",
+          "sessions": "7",
+          "active_users": "3",
+          "engaged_sessions": "0"
+        },
+        {
+          "date": "20260814",
+          "sessions": "5",
+          "active_users": "4",
+          "engaged_sessions": "2"
+        },
+        {
+          "date": "20260811",
+          "sessions": "4",
+          "active_users": "3",
+          "engaged_sessions": "0"
+        },
+        {
+          "date": "20260812",
+          "sessions": "4",
+          "active_users": "2",
+          "engaged_sessions": "3"
+        },
+        {
+          "date": "20260816",
+          "sessions": "2",
+          "active_users": "2",
+          "engaged_sessions": "1"
+        },
+        {
+          "date": "20260818",
+          "sessions": "2",
+          "active_users": "2",
+          "engaged_sessions": "0"
+        }
+      ]
+    },
+    {
+      "type": "new_shops",
+      "count": 12,
+      "shops": [
+        {
+          "name": "ラ・パティスリームラカミ",
+          "area": "秋葉区",
+          "created_at": "2026-08-17T07:01:17.000Z"
+        },
+        {
+          "name": "ヨルノアイス",
+          "area": "新潟市中央区",
+          "created_at": "2026-08-17T07:01:17.000Z"
+        },
+        {
+          "name": "里山食堂",
+          "area": "十日町市",
+          "created_at": "2026-08-17T07:01:17.000Z"
+        },
+        {
+          "name": "ばばしょの茶屋",
+          "area": "小千谷市",
+          "created_at": "2026-08-17T10:36:41.000Z"
+        },
+        {
+          "name": "里山食堂",
+          "area": "十日町市",
+          "created_at": "2026-08-17T10:36:41.000Z"
+        },
+        {
+          "name": "イタリアンバル匠",
+          "area": "南魚沼市",
+          "created_at": "2026-08-17T07:01:17.000Z"
+        },
+        {
+          "name": "ばばしょの茶屋",
+          "area": "小千谷市",
+          "created_at": "2026-08-17T07:01:17.000Z"
+        },
+        {
+          "name": "旅するごはん家",
+          "area": "長岡市",
+          "created_at": "2026-08-17T07:01:17.000Z"
+        },
+        {
+          "name": "イタリアンバル匠",
+          "area": "南魚沼市",
+          "created_at": "2026-08-17T10:36:41.000Z"
+        },
+        {
+          "name": "旅するごはん家",
+          "area": "長岡市",
+          "created_at": "2026-08-17T10:36:41.000Z"
+        },
+        {
+          "name": "switch cafe",
+          "area": "南魚沼市",
+          "created_at": "2026-08-17T07:01:17.000Z"
+        },
+        {
+          "name": "switch cafe",
+          "area": "南魚沼市",
+          "created_at": "2026-08-17T10:36:41.000Z"
+        }
+      ]
+    },
+    {
+      "type": "analysis",
+      "suggestions": [],
+      "error": "Expecting value: line 1 column 1 (char 0)"
+    }
+  ]
+}
