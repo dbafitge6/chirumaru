@@ -70,6 +70,7 @@ def get_instagram_performance() -> Dict[str, Any]:
     url = f'https://graph.facebook.com/v18.0/{account_id}/insights'
     params = {
         'metric': 'reach,profile_views,total_interactions',
+        'period': 'day',
         'access_token': token
     }
 
