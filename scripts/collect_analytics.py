@@ -228,7 +228,7 @@ def main():
     instagram_account_id = os.getenv("INSTAGRAM_BUSINESS_ACCOUNT_ID")
     instagram_token = os.getenv("INSTAGRAM_GRAPH_TOKEN")
     ga4_property_id = os.getenv("GA4_PROPERTY_ID")
-    ga4_service_account_key = os.getenv("GA4_SERVICE_ACCOUNT_KEY")
+    ga4_service_account_key = os.getenv("GCP_SERVICE_ACCOUNT_KEY")
 
     instagram_insights = []
     ga4_analytics = {}
@@ -243,7 +243,7 @@ def main():
         print("\nFetching GA4 Analytics...")
         ga4_analytics = fetch_ga4_analytics(ga4_property_id, ga4_service_account_key)
     else:
-        print("⚠ Skipping GA4: GA4_PROPERTY_ID or GA4_SERVICE_ACCOUNT_KEY not set")
+        print("⚠ Skipping GA4: GA4_PROPERTY_ID or GCP_SERVICE_ACCOUNT_KEY not set")
 
     # Save to file
     print("\nSaving data...")

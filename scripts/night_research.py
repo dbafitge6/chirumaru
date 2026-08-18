@@ -6,10 +6,12 @@ Night Research Script - Automated daily research of Instagram performance and we
 import json
 import os
 import sys
+import base64
 from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 import requests
 from anthropic import Anthropic
+from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import RunReportRequest, Dimension, Metric
 
@@ -99,10 +101,18 @@ def get_instagram_performance() -> Dict[str, Any]:
 def get_ga4_analytics() -> Dict[str, Any]:
     """Fetch GA4 website analytics for the last 7 days"""
     property_id = os.getenv('GA4_PROPERTY_ID')
+    gcp_sa_key_b64 = os.getenv('GCP_SERVICE_ACCOUNT_KEY')
+
     if not property_id:
         raise ValueError("GA4_PROPERTY_ID environment variable not set")
+    if not gcp_sa_key_b64:
+        raise ValueError("GCP_SERVICE_ACCOUNT_KEY environment variable not set")
 
-    client = BetaAnalyticsDataClient()
+    key_json_str = base64.b64decode(gcp_sa_key_b64).decode('utf-8')
+    key_json = json.loads(key_json_str)
+    credentials = service_account.Credentials.from_service_account_info(key_json)
+
+    client = BetaAnalyticsDataClient(credentials=credentials)
 
     request = RunReportRequest(
         property=f"properties/{property_id}",
