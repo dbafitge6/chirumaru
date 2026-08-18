@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-18T08:57:38.783685",
+  "timestamp": "2026-08-18T17:20:30.100559",
   "timezone": "Asia/Tokyo",
   "results": [
     {
@@ -26,7 +26,7 @@
           "date": "20260817",
           "sessions": "7",
           "active_users": "3",
-          "engaged_sessions": "0"
+          "engaged_sessions": "5"
         },
         {
           "date": "20260814",
@@ -35,8 +35,8 @@
           "engaged_sessions": "2"
         },
         {
-          "date": "20260811",
-          "sessions": "4",
+          "date": "20260818",
+          "sessions": "5",
           "active_users": "3",
           "engaged_sessions": "0"
         },
@@ -51,75 +51,43 @@
           "sessions": "2",
           "active_users": "2",
           "engaged_sessions": "1"
-        },
-        {
-          "date": "20260818",
-          "sessions": "2",
-          "active_users": "2",
-          "engaged_sessions": "0"
         }
       ]
     },
     {
       "type": "new_shops",
-      "count": 5,
-      "shops": [
-        {
-          "name": "ばばしょの茶屋",
-          "area": "小千谷市",
-          "created_at": "2026-08-17T10:36:41.000Z"
-        },
-        {
-          "name": "里山食堂",
-          "area": "十日町市",
-          "created_at": "2026-08-17T10:36:41.000Z"
-        },
-        {
-          "name": "イタリアンバル匠",
-          "area": "南魚沼市",
-          "created_at": "2026-08-17T10:36:41.000Z"
-        },
-        {
-          "name": "旅するごはん家",
-          "area": "長岡市",
-          "created_at": "2026-08-17T10:36:41.000Z"
-        },
-        {
-          "name": "switch cafe",
-          "area": "南魚沼市",
-          "created_at": "2026-08-17T10:36:41.000Z"
-        }
-      ]
+      "count": 0,
+      "shops": []
     },
     {
       "type": "analysis",
       "suggestions": [
         {
-          "title": "Increase Instagram posting frequency and content strategy",
-          "problem": "Instagram reach is 0 today, indicating no recent posts or visibility issues. This suggests inconsistent or missing content strategy.",
-          "root_cause": "Possible causes: no posts published today, posting during low-engagement hours, or insufficient hashtag/caption optimization. Instagram algorithm favors consistent posting.",
-          "suggestion": "Establish a daily Instagram posting schedule (1-2 posts per day) featuring bakery discoveries with high-quality images, local reviews, and location tags. Use 15-20 relevant hashtags including #ちるまる #カフェ #パン屋さん #カフェ巡り and location-based tags.",
-          "expected_impact": "Daily reach should increase from 0 to 100-500+ impressions per post within 2 weeks. This drives awareness and website traffic.",
-          "implementation_note": "Create a content calendar template: Monday=Bakery spotlight, Wednesday=User-generated content, Friday=New discovery. Example caption: 'みつけた!新宿の隠れ家パン屋🍞 ちるまるで詳しく見る👇 [link]' with call-to-action to website."
+          "title": "Reactivate Instagram content strategy",
+          "problem": "Instagram reach is 0 for today, indicating no recent posts or algorithmic visibility",
+          "root_cause": "Likely gap in posting schedule or Instagram account inactivity; algorithm deprioritizes inactive accounts",
+          "suggestion": "Establish a consistent posting schedule of 3-4 times per week on Instagram. Create carousel posts featuring bakery/cafe discoveries with high-quality photos, location tags, and location stickers to increase discoverability",
+          "expected_impact": "Restore Instagram reach from 0 to 500-2000+ impressions daily; drive 15-25% of website traffic from Instagram within 4 weeks",
+          "implementation_note": "Post template: Day 1 (Mon/Wed): New bakery spotlight carousel (5-7 slides), Day 2 (Thu): User-generated content reels, Day 3 (Sat): Weekly top 3 picks. Include location tags, hashtags (8-15 relevant), and CTAs linking to website via bio link or sticker."
         },
         {
-          "title": "Reduce bounce rate by improving landing page relevance",
-          "problem": "Website has 32 total sessions over 7 days but only 11 engaged sessions (34% engagement rate). High bounce rate indicates visitors aren't finding what they need.",
-          "root_cause": "Instagram traffic (or other sources) may be directing users to generic homepage rather than specific bakery pages. Misalignment between ad/post promise and landing page content causes immediate exits.",
-          "suggestion": "Create bakery-specific landing pages with direct links from Instagram posts. Each Instagram post should link to a dedicated page featuring that specific bakery with photos, reviews, hours, location map, and user ratings.",
-          "expected_impact": "Increase engaged sessions from 34% to 60%+. If Instagram drives 50 sessions/week with 60% engagement, that's 30 engaged sessions vs current 5-6.",
-          "implementation_note": "Update Instagram bio link to use UTM parameters: 'https://chirumaru.com/bakery/[bakery-id]?utm_source=instagram&utm_medium=bio' instead of homepage. Example post: '#新宿パン屋 ↓プロフィールのリンクから詳細確認' [bakery-specific image]"
+          "title": "Improve content relevance to reduce bounce sessions",
+          "problem": "62.5% of sessions (5 out of 8 days) have 0-1 engaged sessions; Aug 18 had 5 sessions but 0 engaged",
+          "root_cause": "Website content may not match user search intent; landing pages lack clear CTAs or bakery/cafe details that answer user questions",
+          "suggestion": "Audit top landing pages and add micro-conversions: prominent 'Save Bakery' buttons, 'View on Map' CTAs, and quick-info cards (hours, address, specialty items) above the fold. A/B test landing page layouts prioritizing visual content over text",
+          "expected_impact": "Increase engaged session rate from ~40% to 60-70%; reduce bounce rate by 20-30%; improve average session duration",
+          "implementation_note": "Add sticky header with quick actions: <button>地図で見る</button> <button>お気に入り保存</button>. Place bakery info cards within first 300px of page load: { name, cuisine_type, address, hours, signature_item }"
         },
         {
-          "title": "Implement engagement triggers and content optimization",
-          "problem": "Multiple days show sessions but zero engaged sessions (Aug 17, 11, 18). Users visiting but not interacting suggests poor content discoverability or unclear call-to-action.",
-          "root_cause": "Website may lack clear navigation, search functionality, or compelling reasons to explore. Users don't know what to do after landing.",
-          "suggestion": "Add prominent calls-to-action above the fold: 'どのカフェを探す?' with category filters (新しいカフェ、近くのカフェ、ランキング). Implement quick-view bakery cards with ratings, one-click save/favorite feature, and 'もっと見る' buttons.",
-          "expected_impact": "Convert 50% of non-engaged sessions to engaged sessions. With current 7-8 sessions/day average, increase daily engaged sessions from 0.7 to 3-4 sessions.",
-          "implementation_note": "Add homepage banner: `<div class=\"cta-banner\"><h2>どのカフェを探す?</h2><button>新しい発見</button><button>近くのカフェ</button><button>ランキング</button></div>`. Track button clicks as engagement events in GA4."
+          "title": "Increase organic traffic volume through content marketing",
+          "problem": "Total weekly sessions are low (36 sessions across 6 days); average 6 sessions/day indicates minimal organic discovery",
+          "root_cause": "Limited SEO visibility; low keyword rankings for bakery/cafe discovery queries; insufficient content about regional bakeries and trending items",
+          "suggestion": "Create location-specific and trend-based content targeting long-tail keywords: blog posts like '〇〇駅周辺のクロワッサン専門店5選' or '2026年話題のペストリー店'. Optimize for local search and include schema markup for bakery listings",
+          "expected_impact": "Increase weekly sessions from 36 to 80-120 within 8 weeks; improve organic search traffic by 40-50%",
+          "implementation_note": "Publish 2 blog posts weekly with schema markup: { '@type': 'LocalBusiness', 'name': '', 'address': '', 'geo': { 'latitude': '', 'longitude': '' }, 'specialty': '' }. Target keywords with 100-500 monthly searches in ちるまる's regions."
         }
       ],
-      "timestamp": "2026-08-18T08:57:38.783669"
+      "timestamp": "2026-08-18T17:20:30.100544"
     }
   ]
 }
