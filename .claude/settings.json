@@ -1,5 +1,19 @@
 {
-  "env": {
-    "AIRTABLE_TOKEN": "patXWxsYMx4qiDosq.10523130256fa48e8a26b5f52a6e6849af537f"
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/advisor_check.sh",
+            "timeout": 30,
+            "statusMessage": "Checking work quality with advisor...",
+            "asyncRewake": true,
+            "rewakeMessage": "🔍 Advisor feedback:",
+            "rewakeSummary": "Advisor flagged issues before completion"
+          }
+        ]
+      }
+    ]
   }
 }
