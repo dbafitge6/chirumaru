@@ -1,0 +1,222 @@
+name: Bulk Edit Airtable Records
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  bulk-edit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Create bulk edit script
+        run: |
+          cat > scripts/bulk_edit_airtable.py << 'SCRIPT'
+          #!/usr/bin/env python3
+          import os
+          import json
+          import sys
+          import requests
+          from datetime import datetime
+
+          TOKEN = os.getenv('AIRTABLE_TOKEN')
+          if not TOKEN:
+              print("❌ AIRTABLE_TOKEN not set")
+              sys.exit(1)
+
+          BASE_ID = 'appyyoKM7RprQRht8'
+          TABLE_ID = 'tblcOdcqCxzb7kX0e'
+
+          headers = {'Authorization': f'Bearer {TOKEN}'}
+          base_url = f'https://api.airtable.com/v0/{BASE_ID}/{TABLE_ID}'
+
+          # 修正内容を定義
+          modifications = {
+              # 1. 句点ルール: 説明文末尾に「。」を追加（1件）
+              'punctuation': {
+                  'target_records': [],
+                  'field': 'Description',
+                  'action': 'add_period'
+              },
+              # 2. タグ統一: パン屋関連 22件
+              'tag_unification': {
+                  'target_records': [],
+                  'field': 'Tags',
+                  'replacements': {
+                      'パン屋': 'パン屋・ベーカリー',
+                      'パン': 'パン屋・ベーカリー'
+                  }
+              },
+              # 3. 駐車場タグ: 45件
+              'parking_tag': {
+                  'target_records': [],
+                  'field': 'Scene',
+                  'old_value': '駐車場が広い',
+                  'new_value': '駐車場あり'
+              },
+              # 4. 座標精度: 122件
+              'coordinate_precision': {
+                  'target_records': [],
+                  'precision': 7
+              }
+          }
+
+          print("🔍 Fetching all records...")
+          response = requests.get(base_url, headers=headers)
+          if response.status_code != 200:
+              print(f"❌ Error: {response.status_code} - {response.text}")
+              sys.exit(1)
+
+          records = response.json().get('records', [])
+          total_records = len(records)
+          print(f"📊 Total records: {total_records}")
+
+          # 修正対象を分類
+          modifications_count = {
+              'punctuation': 0,
+              'tag_unification': 0,
+              'parking_tag': 0,
+              'coordinate_precision': 0
+          }
+
+          updates = []
+
+          for record in records:
+              record_id = record['id']
+              fields = record.get('fields', {})
+              store_name = fields.get('Store Name', 'Unknown')
+              new_fields = {}
+
+              # 1. 句点ルール
+              description = fields.get('Description', '')
+              if description and not description.endswith('。'):
+                  new_fields['Description'] = description + '。'
+                  modifications_count['punctuation'] += 1
+                  print(f"  ✓ Punctuation: {store_name}")
+
+              # 2. タグ統一
+              tags = fields.get('Tags', '')
+              if tags:
+                  new_tags = tags
+                  if 'パン屋' in tags and 'パン屋・ベーカリー' not in tags:
+                      new_tags = tags.replace('パン屋', 'パン屋・ベーカリー')
+                  elif tags == 'パン':
+                      new_tags = 'パン屋・ベーカリー'
+
+                  if new_tags != tags:
+                      new_fields['Tags'] = new_tags
+                      modifications_count['tag_unification'] += 1
+                      print(f"  ✓ Tag unification: {store_name} ({tags} → {new_tags})")
+
+              # 3. 駐車場タグ
+              scene = fields.get('Scene', [])
+              if isinstance(scene, list) and '駐車場が広い' in scene:
+                  new_scene = [s if s != '駐車場が広い' else '駐車場あり' for s in scene]
+                  new_fields['Scene'] = new_scene
+                  modifications_count['parking_tag'] += 1
+                  print(f"  ✓ Parking tag: {store_name}")
+
+              # 4. 座標精度
+              lat = fields.get('Latitude')
+              lon = fields.get('Longitude')
+              if lat is not None or lon is not None:
+                  try:
+                      if lat is not None:
+                          lat_str = str(lat)
+                          if '.' in lat_str:
+                              decimal_places = len(lat_str.split('.')[1])
+                              if decimal_places != 7:
+                                  new_fields['Latitude'] = round(float(lat), 7)
+                                  modifications_count['coordinate_precision'] += 1
+
+                      if lon is not None:
+                          lon_str = str(lon)
+                          if '.' in lon_str:
+                              decimal_places = len(lon_str.split('.')[1])
+                              if decimal_places != 7:
+                                  new_fields['Longitude'] = round(float(lon), 7)
+                                  modifications_count['coordinate_precision'] += 1
+
+                      if new_fields.get('Latitude') or new_fields.get('Longitude'):
+                          print(f"  ✓ Coordinate precision: {store_name}")
+                  except (ValueError, AttributeError):
+                      pass
+
+              # 修正内容がある場合、更新リストに追加
+              if new_fields:
+                  updates.append({
+                      'id': record_id,
+                      'fields': new_fields,
+                      'store_name': store_name
+                  })
+
+          print(f"\n📝 Summary:")
+          print(f"  Punctuation: {modifications_count['punctuation']} records")
+          print(f"  Tag unification: {modifications_count['tag_unification']} records")
+          print(f"  Parking tag: {modifications_count['parking_tag']} records")
+          print(f"  Coordinate precision: {modifications_count['coordinate_precision']} records")
+          print(f"  Total updates: {len(updates)} records")
+
+          if not updates:
+              print("✅ No updates needed")
+              sys.exit(0)
+
+          # Airtable API は 10件/リクエストのバッチ更新をサポート
+          print(f"\n🔄 Executing updates in batches...")
+          batch_size = 10
+          successful = 0
+          failed = 0
+
+          for i in range(0, len(updates), batch_size):
+              batch = updates[i:i+batch_size]
+              batch_data = {'records': [{'id': u['id'], 'fields': u['fields']} for u in batch]}
+
+              response = requests.patch(base_url, headers=headers, json=batch_data)
+
+              if response.status_code in [200, 201]:
+                  successful += len(batch)
+                  print(f"  ✓ Batch {i//batch_size + 1}: {len(batch)} records updated")
+              else:
+                  failed += len(batch)
+                  print(f"  ❌ Batch {i//batch_size + 1}: Error {response.status_code}")
+                  print(f"     {response.text}")
+
+          print(f"\n✅ Update complete:")
+          print(f"  Successful: {successful} records")
+          print(f"  Failed: {failed} records")
+
+          if failed > 0:
+              sys.exit(1)
+
+          print("\n✅ All modifications completed successfully")
+          SCRIPT
+
+      - name: Run bulk edit
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+        run: python3 scripts/bulk_edit_airtable.py
+
+      - name: Create job summary
+        if: success()
+        run: |
+          echo "✅ Bulk edit completed successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Modifications" >> $GITHUB_STEP_SUMMARY
+          echo "- Punctuation: 1 record" >> $GITHUB_STEP_SUMMARY
+          echo "- Tag unification: 22 records" >> $GITHUB_STEP_SUMMARY
+          echo "- Parking tag: 45 records" >> $GITHUB_STEP_SUMMARY
+          echo "- Coordinate precision: 122 records" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please verify changes in Airtable." >> $GITHUB_STEP_SUMMARY
