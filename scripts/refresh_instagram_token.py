@@ -145,12 +145,36 @@ def main():
         print("❌ INSTAGRAM_GRAPH_TOKEN not set")
         sys.exit(1)
 
-    print("🔍 Checking Instagram token expiry...\n")
+    print("🔍 Checking Instagram token...\n")
 
+    # Try to check expiry, but if it fails, proceed with exchange attempt
     result = check_token_expiry(token)
+
+    # If token check failed, it might be a short-lived token that can still be exchanged
     if result[0] is None and result[1] is None:
-        print("❌ Failed to check token expiry")
-        sys.exit(1)
+        print("⚠️  Token check failed (likely short-lived or expired)")
+        print("    Attempting direct token exchange...\n")
+
+        app_id = os.getenv('FACEBOOK_APP_ID')
+        app_secret = os.getenv('FACEBOOK_APP_SECRET')
+
+        if not app_id or not app_secret:
+            print("❌ Cannot exchange token without FACEBOOK_APP_ID/SECRET")
+            sys.exit(1)
+
+        new_token = exchange_short_lived_to_long_lived(token, app_id, app_secret)
+        if new_token:
+            print("✅ Token exchanged to long-lived format")
+            print("🔄 Updating GitHub Secrets...\n")
+            if update_github_secret(new_token):
+                print("✅ Long-lived token saved to GitHub Secrets!\n")
+                sys.exit(0)
+            else:
+                print("❌ Failed to save token to GitHub Secrets\n")
+                sys.exit(1)
+        else:
+            print("❌ Token exchange failed")
+            sys.exit(1)
 
     expires_dt, days_remaining, hours_remaining = result
 
