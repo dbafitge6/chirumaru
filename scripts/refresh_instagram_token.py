@@ -16,21 +16,34 @@ import requests
 def exchange_short_lived_to_long_lived(token, app_id, app_secret):
     """Exchange short-lived token to long-lived token"""
     try:
-        response = requests.post(
-            'https://graph.facebook.com/v18.0/oauth/access_token',
-            data={
-                'grant_type': 'fb_exchange_token',
-                'client_id': app_id,
-                'client_secret': app_secret,
-                'access_token': token
-            },
-            timeout=5
-        )
+        # Build request URL with query parameters (standard for Meta API)
+        url = 'https://graph.facebook.com/v18.0/oauth/access_token'
+        params = {
+            'grant_type': 'fb_exchange_token',
+            'client_id': app_id,
+            'client_secret': app_secret,
+            'access_token': token
+        }
+
+        # Log request details (mask secret)
+        masked_url = url + '?grant_type=fb_exchange_token&client_id=' + app_id + '&client_secret=***&access_token=***'
+        print(f"   Request URL: {masked_url}")
+
+        response = requests.get(url, params=params, timeout=5)
+
+        # Log raw response for debugging
+        print(f"   Response status: {response.status_code}")
+        print(f"   Response text: {response.text[:500]}")  # First 500 chars
+
         data = response.json()
 
         if 'error' in data:
             error = data['error']
-            raise ValueError(f"Token exchange failed: {error.get('message', str(error))}")
+            error_msg = error.get('message', str(error))
+            error_code = error.get('code', 'N/A')
+            error_type = error.get('type', 'N/A')
+            print(f"   Error code: {error_code}, Type: {error_type}")
+            raise ValueError(f"Token exchange failed: {error_msg}")
 
         new_token = data.get('access_token')
         if not new_token:
