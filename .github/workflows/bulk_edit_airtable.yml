@@ -3,7 +3,8 @@ name: Bulk Edit Airtable Records
 on:
   workflow_dispatch:
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   bulk-edit:
