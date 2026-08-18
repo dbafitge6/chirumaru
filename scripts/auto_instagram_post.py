@@ -862,7 +862,7 @@ else:
                     f"Update: add posted stores and scene ({today})",
                     '--author', 'Claude Code <noreply@anthropic.com>'
                 ], cwd=Path(__file__).parent.parent, check=True, capture_output=True)
-                subprocess.run(['git', 'push', 'origin', 'main'], cwd=Path(__file__).parent.parent, check=True, capture_output=True, timeout=30)
+                subprocess.run(['git', 'push', 'github', 'main'], cwd=Path(__file__).parent.parent, check=True, capture_output=True, timeout=30)
                 print(f"✅ Git コミット＆プッシュ完了")
             except Exception as git_e:
                 print(f"⚠️  Git 操作エラー（投稿は成功）: {git_e}")
