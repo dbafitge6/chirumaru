@@ -152,7 +152,7 @@ def get_market_trends() -> Dict[str, Any]:
         'trends': []
     }
 
-def generate_analysis_and_suggestions(instagram_data: Dict[str, Any], ga4_data: Dict[str, Any]) -> Dict[str, Any]:
+def generate_analysis_and_suggestions(instagram_data: Optional[Dict[str, Any]], ga4_data: Dict[str, Any]) -> Dict[str, Any]:
     """Generate analysis and improvement suggestions using Claude"""
     api_key = os.getenv('ANTHROPIC_API_KEY')
     if not api_key:
@@ -161,13 +161,17 @@ def generate_analysis_and_suggestions(instagram_data: Dict[str, Any], ga4_data: 
 
     client = Anthropic()
 
+    instagram_section = "Instagram Insights not available"
+    if instagram_data:
+        instagram_section = f"""**Instagram Insights (today):**
+{json.dumps(instagram_data.get('metrics', []), ensure_ascii=False, indent=2)}"""
+
     prompt = f"""
 You are a social media analytics expert for a bakery/cafe discovery website called "ちるまる" (Chirumaru).
 
 Analyze the following data and provide specific, actionable improvement suggestions:
 
-**Instagram Insights (today):**
-{json.dumps(instagram_data.get('metrics', []), ensure_ascii=False, indent=2)}
+{instagram_section}
 
 **Website Analytics (last 7 days):**
 {json.dumps(ga4_data.get('rows', []), ensure_ascii=False, indent=2)}
@@ -238,16 +242,14 @@ def main():
     instagram_data = None
     ga4_data = None
 
-    # Fetch Instagram Insights (required)
+    # Fetch Instagram Insights (non-critical, but preferred)
     try:
         print("  Fetching Instagram Insights...")
         instagram_data = get_instagram_performance()
         results.append(instagram_data)
         print("    ✓ Instagram Insights fetched")
     except Exception as e:
-        error_msg = f"Instagram Insights failed: {str(e)}"
-        print(f"    ✗ {error_msg}")
-        errors.append(error_msg)
+        print(f"    ⚠ Instagram Insights skipped (non-critical): {str(e)}")
 
     # Fetch GA4 Analytics (required)
     try:
@@ -268,8 +270,8 @@ def main():
     except Exception as e:
         print(f"    ⚠ Airtable check failed (non-critical): {str(e)}")
 
-    # Generate analysis and suggestions (optional)
-    if instagram_data and ga4_data:
+    # Generate analysis and suggestions (optional - uses GA4 data)
+    if ga4_data:
         try:
             print("  Generating analysis and suggestions...")
             analysis = generate_analysis_and_suggestions(instagram_data, ga4_data)
