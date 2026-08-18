@@ -3,6 +3,8 @@ name: Test Token Exchange
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   test-exchange:
     runs-on: ubuntu-latest
@@ -24,6 +26,27 @@ jobs:
           INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
           FACEBOOK_APP_ID: ${{ secrets.FACEBOOK_APP_ID }}
           FACEBOOK_APP_SECRET: ${{ secrets.FACEBOOK_APP_SECRET }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+          ARTIFACT_DIR: instagram-token-artifact
         run: python3 scripts/refresh_instagram_token.py
+
+      - name: Upload token artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instagram-token
+          path: instagram-token-artifact/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Create job summary
+        if: success()
+        run: |
+          echo "✅ Token exchange test successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📋 **New long-lived token is ready (60 days valid)**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**How to update INSTAGRAM_GRAPH_TOKEN:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Click on Artifacts in this workflow run" >> $GITHUB_STEP_SUMMARY
+          echo "2. Download the \`instagram-token\` file" >> $GITHUB_STEP_SUMMARY
+          echo "3. Copy the token from the file" >> $GITHUB_STEP_SUMMARY
+          echo "4. Go to GitHub Secrets and update \`INSTAGRAM_GRAPH_TOKEN\`" >> $GITHUB_STEP_SUMMARY
