@@ -42,6 +42,12 @@ jobs:
       - name: Install Postiz CLI
         run: npm install -g postiz
 
+      - name: Authenticate Postiz CLI
+        env:
+          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
+        run: |
+          postiz auth:login --api-key $POSTIZ_API_KEY || echo "⚠️ Postiz auth initialization attempted"
+
       - name: Check if 2 days passed
         id: check_interval
         run: |
@@ -70,7 +76,6 @@ jobs:
         if: steps.check_interval.outputs.should_run == 'true'
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
         run: python scripts/auto_instagram_post.py
 
       - name: Commit changes
