@@ -1,0 +1,75 @@
+name: Test Instagram Token Diagnostics
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check token length
+        env:
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+        run: |
+          TOKEN_LENGTH=${#INSTAGRAM_GRAPH_TOKEN}
+          echo "✅ Token length: $TOKEN_LENGTH characters"
+
+          if [ $TOKEN_LENGTH -lt 100 ]; then
+            echo "⚠️  Warning: Token seems too short (expected 1000+)"
+          elif [ $TOKEN_LENGTH -gt 2000 ]; then
+            echo "⚠️  Warning: Token seems too long"
+          else
+            echo "✅ Token length looks reasonable"
+          fi
+
+      - name: Check token scopes and expiration
+        env:
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+        run: |
+          echo "📋 Checking token metadata via Meta Graph API..."
+          echo ""
+
+          RESPONSE=$(curl -s "https://graph.instagram.com/debug_token?input_token=$INSTAGRAM_GRAPH_TOKEN&access_token=$INSTAGRAM_GRAPH_TOKEN")
+
+          echo "Raw response:"
+          echo "$RESPONSE" | python3 -m json.tool
+
+          echo ""
+          echo "Parsing metadata..."
+
+          # Check if error exists
+          ERROR=$(echo "$RESPONSE" | python3 -c "import sys, json; d=json.load(sys.stdin); print(d.get('error', {}).get('message', ''))" 2>/dev/null)
+
+          if [ ! -z "$ERROR" ]; then
+            echo "❌ API Error: $ERROR"
+          else
+            echo "✅ No API errors"
+
+            # Extract scopes
+            SCOPES=$(echo "$RESPONSE" | python3 -c "import sys, json; d=json.load(sys.stdin); print(','.join(d.get('data', {}).get('scopes', [])))" 2>/dev/null)
+            echo "📌 Scopes: $SCOPES"
+
+            if [[ "$SCOPES" == *"instagram_content_publish"* ]]; then
+              echo "✅ Has instagram_content_publish scope"
+            else
+              echo "❌ Missing instagram_content_publish scope"
+            fi
+
+            # Extract expiration
+            EXP=$(echo "$RESPONSE" | python3 -c "import sys, json; d=json.load(sys.stdin); print(d.get('data', {}).get('expires_at', 'N/A'))" 2>/dev/null)
+            echo "⏰ Expires at: $EXP"
+          fi
+
+      - name: Create job summary
+        if: always()
+        run: |
+          echo "## Instagram Token Diagnostics" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Test completed. Check logs for results." >> $GITHUB_STEP_SUMMARY
