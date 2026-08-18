@@ -199,7 +199,8 @@ Example format:
 ]
 ```
 
-Return ONLY valid JSON array, no other text.
+Return ONLY the JSON array, no markdown code blocks, no explanation text, nothing else.
+Start with [ and end with ], containing only valid JSON.
 """
 
     try:
@@ -247,7 +248,13 @@ Return ONLY valid JSON array, no other text.
         }
     except json.JSONDecodeError as e:
         print(f"    [DEBUG] JSON decode error: {str(e)}")
-        print(f"    [DEBUG] Response text that failed to parse: {response_text}")
+        print(f"    [DEBUG] Response length: {len(response_text)} chars")
+        print(f"    [DEBUG] Response last 200 chars: ...{response_text[-200:]}")
+        print(f"    [DEBUG] Error position {e.pos}: context around error")
+        if e.pos:
+            start = max(0, e.pos - 50)
+            end = min(len(response_text), e.pos + 50)
+            print(f"    [DEBUG] Context: ...{response_text[start:end]}...")
         print(f"    ⚠ Analysis generation failed (non-critical): JSON parse error - {str(e)}")
         return {'type': 'analysis', 'suggestions': [], 'error': f'JSON parse: {str(e)}'}
     except Exception as e:
