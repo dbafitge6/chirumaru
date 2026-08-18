@@ -230,6 +230,15 @@ Return ONLY valid JSON array, no other text.
 
         print(f"    [DEBUG] Response text (first 200 chars): {response_text[:200]}")
 
+        # Remove Markdown code block wrapper if present
+        if response_text.startswith('```'):
+            print(f"    [DEBUG] Markdown code block detected. Stripping...")
+            response_text = response_text[response_text.find('\n')+1:]
+            if response_text.endswith('```'):
+                response_text = response_text[:response_text.rfind('```')]
+            response_text = response_text.strip()
+            print(f"    [DEBUG] After stripping - text length: {len(response_text)}, first 100 chars: {response_text[:100]}")
+
         suggestions = json.loads(response_text)
         return {
             'type': 'analysis',
