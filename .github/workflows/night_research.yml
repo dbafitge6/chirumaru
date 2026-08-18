@@ -29,7 +29,7 @@ jobs:
 
       - name: Run night research
         env:
-          AIRTABLE_PAT: ${{ secrets.AIRTABLE_PAT }}
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
           INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
           INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
           GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}

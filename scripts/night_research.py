@@ -21,9 +21,9 @@ os.makedirs(RESEARCH_RESULTS_DIR, exist_ok=True)
 
 def check_airtable_new_shops() -> Dict[str, Any]:
     """Check for newly added shops in Airtable (informational only, does not block)"""
-    airtable_pat = os.getenv('AIRTABLE_PAT')
+    airtable_pat = os.getenv('AIRTABLE_TOKEN') or os.getenv('AIRTABLE_PAT')
     if not airtable_pat:
-        raise ValueError("AIRTABLE_PAT environment variable not set")
+        raise ValueError("AIRTABLE_TOKEN or AIRTABLE_PAT environment variable not set")
 
     base_id = 'appyyoKM7RprQRht8'
     table_id = 'tblcOdcqCxzb7kX0e'
