@@ -802,14 +802,15 @@ else:
 
         print(f"✅ アップロード完了: {postiz_video_url}")
 
-        # Step 4.2: Postiz API で投稿作成
+        # Step 4.2: Postiz API で投稿作成（スケジュール即座実行）
         print("\n📱 Instagram に投稿中...")
-        now_utc = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        from datetime import timedelta
+        schedule_time = (datetime.now(timezone.utc) + timedelta(seconds=1)).isoformat().replace('+00:00', 'Z')
         postiz_cmd = [
             'postiz', 'posts:create',
             '-c', caption,
             '-m', postiz_video_url,
-            '-s', now_utc,
+            '-s', schedule_time,
             '--settings', '{"post_type":"post"}',
             '-i', INSTAGRAM_INTEGRATION_ID
         ]
