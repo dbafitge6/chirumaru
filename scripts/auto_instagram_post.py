@@ -10,7 +10,7 @@ import random
 import subprocess
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 import requests
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
@@ -808,7 +808,6 @@ else:
             'postiz', 'posts:create',
             '-c', caption,
             '-m', postiz_video_url,
-            '-s', datetime.utcnow().isoformat() + 'Z',
             '--settings', '{"post_type":"post"}',
             '-i', INSTAGRAM_INTEGRATION_ID
         ]
