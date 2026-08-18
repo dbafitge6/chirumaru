@@ -67,10 +67,9 @@ def get_instagram_performance() -> Dict[str, Any]:
     if not token or not account_id:
         raise ValueError("INSTAGRAM_GRAPH_TOKEN or INSTAGRAM_BUSINESS_ACCOUNT_ID not set")
 
-    url = f'https://graph.instagram.com/v18.0/{account_id}/insights'
+    url = f'https://graph.facebook.com/v18.0/{account_id}/insights'
     params = {
-        'metric': 'impressions,reach,profile_views',
-        'period': 'day',
+        'metric': 'reach,profile_views,total_interactions',
         'access_token': token
     }
 
