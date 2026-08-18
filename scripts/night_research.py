@@ -69,7 +69,7 @@ def get_instagram_performance() -> Dict[str, Any]:
 
     url = f'https://graph.facebook.com/v18.0/{account_id}/insights'
     params = {
-        'metric': 'reach,follower_count,website_clicks',
+        'metric': 'reach,follower_count',
         'period': 'day',
         'access_token': token
     }
@@ -203,6 +203,8 @@ Return ONLY valid JSON array, no other text.
 """
 
     try:
+        print(f"    [DEBUG] Sending prompt to Claude API (length: {len(prompt)} chars)")
+
         message = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=1000,
@@ -211,7 +213,22 @@ Return ONLY valid JSON array, no other text.
             ]
         )
 
+        print(f"    [DEBUG] Claude API response received. Content count: {len(message.content)}")
+
+        if not message.content or len(message.content) == 0:
+            print(f"    [DEBUG] ERROR: Response has no content blocks")
+            return {'type': 'analysis', 'suggestions': [], 'error': 'No content in response'}
+
+        print(f"    [DEBUG] First content block type: {message.content[0].type}")
+
         response_text = message.content[0].text.strip()
+        print(f"    [DEBUG] Response text length: {len(response_text)} chars")
+
+        if not response_text:
+            print(f"    [DEBUG] ERROR: Response text is empty")
+            return {'type': 'analysis', 'suggestions': [], 'error': 'Empty response text'}
+
+        print(f"    [DEBUG] Response text (first 200 chars): {response_text[:200]}")
 
         suggestions = json.loads(response_text)
         return {
@@ -219,7 +236,13 @@ Return ONLY valid JSON array, no other text.
             'suggestions': suggestions,
             'timestamp': datetime.now().isoformat()
         }
+    except json.JSONDecodeError as e:
+        print(f"    [DEBUG] JSON decode error: {str(e)}")
+        print(f"    [DEBUG] Response text that failed to parse: {response_text}")
+        print(f"    ⚠ Analysis generation failed (non-critical): JSON parse error - {str(e)}")
+        return {'type': 'analysis', 'suggestions': [], 'error': f'JSON parse: {str(e)}'}
     except Exception as e:
+        print(f"    [DEBUG] Exception during analysis: {type(e).__name__}: {str(e)}")
         print(f"    ⚠ Analysis generation failed (non-critical): {str(e)}")
         return {'type': 'analysis', 'suggestions': [], 'error': str(e)}
 
