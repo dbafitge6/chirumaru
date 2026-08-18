@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-18T08:54:23.216085",
+  "timestamp": "2026-08-18T08:57:38.783685",
   "timezone": "Asia/Tokyo",
   "results": [
     {
@@ -93,8 +93,33 @@
     },
     {
       "type": "analysis",
-      "suggestions": [],
-      "error": "JSON parse: Unterminated string starting at: line 24 column 28 (char 3397)"
+      "suggestions": [
+        {
+          "title": "Increase Instagram posting frequency and content strategy",
+          "problem": "Instagram reach is 0 today, indicating no recent posts or visibility issues. This suggests inconsistent or missing content strategy.",
+          "root_cause": "Possible causes: no posts published today, posting during low-engagement hours, or insufficient hashtag/caption optimization. Instagram algorithm favors consistent posting.",
+          "suggestion": "Establish a daily Instagram posting schedule (1-2 posts per day) featuring bakery discoveries with high-quality images, local reviews, and location tags. Use 15-20 relevant hashtags including #ちるまる #カフェ #パン屋さん #カフェ巡り and location-based tags.",
+          "expected_impact": "Daily reach should increase from 0 to 100-500+ impressions per post within 2 weeks. This drives awareness and website traffic.",
+          "implementation_note": "Create a content calendar template: Monday=Bakery spotlight, Wednesday=User-generated content, Friday=New discovery. Example caption: 'みつけた!新宿の隠れ家パン屋🍞 ちるまるで詳しく見る👇 [link]' with call-to-action to website."
+        },
+        {
+          "title": "Reduce bounce rate by improving landing page relevance",
+          "problem": "Website has 32 total sessions over 7 days but only 11 engaged sessions (34% engagement rate). High bounce rate indicates visitors aren't finding what they need.",
+          "root_cause": "Instagram traffic (or other sources) may be directing users to generic homepage rather than specific bakery pages. Misalignment between ad/post promise and landing page content causes immediate exits.",
+          "suggestion": "Create bakery-specific landing pages with direct links from Instagram posts. Each Instagram post should link to a dedicated page featuring that specific bakery with photos, reviews, hours, location map, and user ratings.",
+          "expected_impact": "Increase engaged sessions from 34% to 60%+. If Instagram drives 50 sessions/week with 60% engagement, that's 30 engaged sessions vs current 5-6.",
+          "implementation_note": "Update Instagram bio link to use UTM parameters: 'https://chirumaru.com/bakery/[bakery-id]?utm_source=instagram&utm_medium=bio' instead of homepage. Example post: '#新宿パン屋 ↓プロフィールのリンクから詳細確認' [bakery-specific image]"
+        },
+        {
+          "title": "Implement engagement triggers and content optimization",
+          "problem": "Multiple days show sessions but zero engaged sessions (Aug 17, 11, 18). Users visiting but not interacting suggests poor content discoverability or unclear call-to-action.",
+          "root_cause": "Website may lack clear navigation, search functionality, or compelling reasons to explore. Users don't know what to do after landing.",
+          "suggestion": "Add prominent calls-to-action above the fold: 'どのカフェを探す?' with category filters (新しいカフェ、近くのカフェ、ランキング). Implement quick-view bakery cards with ratings, one-click save/favorite feature, and 'もっと見る' buttons.",
+          "expected_impact": "Convert 50% of non-engaged sessions to engaged sessions. With current 7-8 sessions/day average, increase daily engaged sessions from 0.7 to 3-4 sessions.",
+          "implementation_note": "Add homepage banner: `<div class=\"cta-banner\"><h2>どのカフェを探す?</h2><button>新しい発見</button><button>近くのカフェ</button><button>ランキング</button></div>`. Track button clicks as engagement events in GA4."
+        }
+      ],
+      "timestamp": "2026-08-18T08:57:38.783669"
     }
   ]
 }
