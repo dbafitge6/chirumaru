@@ -120,7 +120,7 @@ def get_ga4_analytics() -> Dict[str, Any]:
         dimensions=[Dimension(name='date')],
         metrics=[
             Metric(name='sessions'),
-            Metric(name='users'),
+            Metric(name='activeUsers'),
             Metric(name='engagedSessions')
         ]
     )
@@ -137,7 +137,7 @@ def get_ga4_analytics() -> Dict[str, Any]:
             {
                 'date': row.dimension_values[0].value,
                 'sessions': row.metric_values[0].value,
-                'users': row.metric_values[1].value,
+                'active_users': row.metric_values[1].value,
                 'engaged_sessions': row.metric_values[2].value
             }
             for row in response.rows
