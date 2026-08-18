@@ -178,13 +178,22 @@ def main():
         new_token = exchange_short_lived_to_long_lived(token, app_id, app_secret)
         if new_token:
             print("✅ Token exchanged to long-lived format")
-            print("🔄 Updating GitHub Secrets...\n")
-            if update_github_secret(new_token):
-                print("✅ Long-lived token saved to GitHub Secrets!\n")
-                sys.exit(0)
-            else:
-                print("❌ Failed to save token to GitHub Secrets\n")
-                sys.exit(1)
+            print("   Validity: 60 days\n")
+
+            # Save token to artifact file (not printed to logs)
+            artifact_dir = os.getenv('ARTIFACT_DIR', 'instagram-token-artifact')
+            os.makedirs(artifact_dir, exist_ok=True)
+
+            from datetime import datetime
+            timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
+            artifact_file = os.path.join(artifact_dir, f'instagram-token-{timestamp}.txt')
+
+            with open(artifact_file, 'w') as f:
+                f.write(new_token)
+
+            print(f"💾 Token saved to artifact: {artifact_file}")
+            print("📋 Download from GitHub Actions Artifacts and update INSTAGRAM_GRAPH_TOKEN\n")
+            sys.exit(0)
         else:
             print("❌ Token exchange failed")
             sys.exit(1)
