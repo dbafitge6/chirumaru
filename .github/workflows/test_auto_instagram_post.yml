@@ -29,15 +29,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      - name: Install Postiz CLI
-        run: npm install -g postiz
-
-      - name: Authenticate Postiz CLI
-        env:
-          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
-        run: |
-          postiz auth:login --api-key $POSTIZ_API_KEY || echo "⚠️ Postiz auth initialization attempted"
-
       - name: Run auto Instagram post script
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
