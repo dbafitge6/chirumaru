@@ -1,0 +1,66 @@
+name: Test Auto Instagram Post (Graph API)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-auto-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests python-dotenv Pillow google-analytics-data google-auth
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Postiz CLI
+        run: npm install -g postiz
+
+      - name: Authenticate Postiz CLI
+        env:
+          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
+        run: |
+          postiz auth:login --api-key $POSTIZ_API_KEY || echo "⚠️ Postiz auth initialization attempted"
+
+      - name: Run auto Instagram post script
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+          INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
+        run: |
+          echo "📋 Starting auto Instagram post test..."
+          echo "Token lengths:"
+          echo "  AIRTABLE_TOKEN: ${#AIRTABLE_TOKEN}"
+          echo "  INSTAGRAM_GRAPH_TOKEN: ${#INSTAGRAM_GRAPH_TOKEN}"
+          echo "  INSTAGRAM_BUSINESS_ACCOUNT_ID: ${#INSTAGRAM_BUSINESS_ACCOUNT_ID}"
+          echo ""
+          python3 scripts/auto_instagram_post.py
+
+      - name: Create job summary
+        if: always()
+        run: |
+          echo "## Auto Instagram Post Test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Test execution completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check logs for:" >> $GITHUB_STEP_SUMMARY
+          echo "- Video generation status" >> $GITHUB_STEP_SUMMARY
+          echo "- Postiz upload result" >> $GITHUB_STEP_SUMMARY
+          echo "- Instagram posting result" >> $GITHUB_STEP_SUMMARY
+          echo "- Media ID" >> $GITHUB_STEP_SUMMARY
