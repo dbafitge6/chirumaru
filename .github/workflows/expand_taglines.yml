@@ -1,0 +1,85 @@
+name: Expand Store Taglines
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  expand:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install anthropic requests
+
+      - name: Try different API key names
+        run: |
+          echo "Testing API key availability..."
+
+          # 可能性のあるキー名をテスト
+          for KEY_NAME in ANTHROPIC_ADVISOR_API_KEY ADVISOR_ANTHROPIC_API_KEY ANTHROPIC_API_KEY_ADVISOR CLAUDE_ADVISOR_API_KEY; do
+            VALUE=$(eval echo \$$KEY_NAME)
+            if [ -z "$VALUE" ]; then
+              echo "❌ $KEY_NAME: not set"
+            else
+              echo "✅ $KEY_NAME: found (${#VALUE} chars)"
+              export FOUND_KEY_NAME=$KEY_NAME
+              export FOUND_API_KEY=$VALUE
+            fi
+          done
+
+          # 見つかったキーを環境変数に保存
+          if [ -z "$FOUND_API_KEY" ]; then
+            echo "❌ No API key found in any expected secret name"
+            exit 1
+          fi
+
+          echo "Using key: $FOUND_KEY_NAME"
+          echo "ANTHROPIC_API_KEY=$FOUND_API_KEY" >> $GITHUB_ENV
+
+        env:
+          ANTHROPIC_ADVISOR_API_KEY: ${{ secrets.ANTHROPIC_ADVISOR_API_KEY }}
+          ADVISOR_ANTHROPIC_API_KEY: ${{ secrets.ADVISOR_ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY_ADVISOR: ${{ secrets.ANTHROPIC_API_KEY_ADVISOR }}
+          CLAUDE_ADVISOR_API_KEY: ${{ secrets.CLAUDE_ADVISOR_API_KEY }}
+
+      - name: Run expand_taglines script
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY }}
+        run: |
+          echo "📋 Running tagline expansion script..."
+          python3 scripts/expand_taglines.py
+
+      - name: Upload log file
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: expansion-log
+          path: logs/description_expansion_*.md
+          retention-days: 7
+
+      - name: Create job summary
+        if: always()
+        run: |
+          if [ -f logs/description_expansion_*.md ]; then
+            echo "## Tagline Expansion Result" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ Log file generated:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat logs/description_expansion_*.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ No log file generated" >> $GITHUB_STEP_SUMMARY
+          fi
