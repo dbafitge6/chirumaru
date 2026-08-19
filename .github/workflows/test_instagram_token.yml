@@ -51,9 +51,9 @@ jobs:
           echo "🔍 Testing simple endpoint: /me?fields=id,name"
           echo ""
 
-          # URL エンコード不要、curl は自動処理
+          # graph.facebook.com を使用（Facebook Graph API Explorer で発行したトークン用）
           curl -v -H "Authorization: Bearer $INSTAGRAM_GRAPH_TOKEN" \
-            "https://graph.instagram.com/me?fields=id,name" 2>&1 | tee /tmp/me_response.txt
+            "https://graph.facebook.com/me?fields=id,name" 2>&1 | tee /tmp/me_response.txt
 
           echo ""
           echo "Response body:"
@@ -67,9 +67,9 @@ jobs:
           echo "📋 Checking token metadata via debug_token..."
           echo ""
 
-          # debug_token の正しい構文を使用
+          # debug_token は graph.facebook.com で実行
           RESPONSE=$(curl -s -X GET \
-            "https://graph.instagram.com/debug_token?input_token=${INSTAGRAM_GRAPH_TOKEN}&access_token=${INSTAGRAM_GRAPH_TOKEN}")
+            "https://graph.facebook.com/debug_token?input_token=${INSTAGRAM_GRAPH_TOKEN}&access_token=${INSTAGRAM_GRAPH_TOKEN}")
 
           echo "Raw response:"
           echo "$RESPONSE" | python3 -m json.tool
