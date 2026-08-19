@@ -8,6 +8,7 @@ import os
 import requests
 import json
 import sys
+import time
 from pathlib import Path
 
 def upload_video_to_instagram(
@@ -59,6 +60,41 @@ def upload_video_to_instagram(
         return {"success": False, "error": "No media ID in response"}
 
     print(f"  ✅ Media created: {media_id}")
+
+    # Step 1.5: メディアのエンコード完了を待つ
+    print(f"  ⏳ Waiting for media encoding to complete...")
+
+    status_url = f"https://graph.facebook.com/{api_version}/{media_id}"
+    status_params = {
+        "fields": "status_code",
+        "access_token": graph_token
+    }
+
+    max_wait = 60  # seconds
+    poll_interval = 2  # seconds
+    elapsed = 0
+
+    while elapsed < max_wait:
+        status_response = requests.get(status_url, params=status_params)
+
+        if status_response.status_code != 200:
+            error_detail = status_response.json().get("error", {})
+            print(f"❌ Status check failed: {error_detail}")
+            return {"success": False, "error": error_detail, "media_id": media_id}
+
+        status_data = status_response.json()
+        status_code = status_data.get("status_code")
+
+        if status_code == "FINISHED":
+            print(f"  ✅ Encoding complete (status: {status_code})")
+            break
+        else:
+            print(f"  ⏳ Status: {status_code} (waiting...)")
+            time.sleep(poll_interval)
+            elapsed += poll_interval
+    else:
+        print(f"❌ Timeout: Media encoding did not complete within {max_wait}s")
+        return {"success": False, "error": "Encoding timeout", "media_id": media_id}
 
     # Step 2: メディアを公開
     print(f"  2️⃣ Publishing media...")
