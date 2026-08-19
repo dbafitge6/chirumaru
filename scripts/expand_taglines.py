@@ -157,6 +157,7 @@ def process_stores(short_tagline_stores):
         expansion = generate_expansion(store, client)
 
         result = {
+            'id': store['id'],
             'name': store['name'],
             'old_tagline': store['tagline'],
             'expansion': expansion,
@@ -166,7 +167,7 @@ def process_stores(short_tagline_stores):
         results.append(result)
 
         status = "✓" if result['success'] else "✗"
-        print(f"[{i}/{total}] {status} {store['name']}: {store['tagline']} → {expansion or '(failed)'}")
+        print(f"[{i}/{total}] {status} {store['name']}: {store['tagline']} → {expansion or '(failed)'} [ID: {store['id']}]")
 
     return results
 
