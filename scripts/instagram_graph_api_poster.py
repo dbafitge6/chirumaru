@@ -58,15 +58,24 @@ def upload_video_to_instagram(
         print(f"❌ No media ID returned")
         return {"success": False, "error": "No media ID in response"}
 
-    print(f"  ✅ Media uploaded: {media_id}")
+    print(f"  ✅ Media created: {media_id}")
 
-    # Step 2: メディアを公開（Reels は即座に公開される）
+    # Step 2: メディアを公開
     print(f"  2️⃣ Publishing media...")
 
-    publish_url = f"https://graph.facebook.com/{api_version}/{media_id}/release"
+    # 正しいエンドポイント: /{ig-user-id}/media_publish
+    # creation_id パラメータで media_id を指定
+    publish_url = f"https://graph.facebook.com/{api_version}/{business_account_id}/media_publish"
+    publish_payload = {
+        "creation_id": media_id
+    }
 
     # トークンはクエリパラメータで渡す
-    publish_response = requests.post(publish_url, params={"access_token": graph_token})
+    publish_response = requests.post(
+        publish_url,
+        json=publish_payload,
+        params={"access_token": graph_token}
+    )
 
     if publish_response.status_code != 200:
         error_detail = publish_response.json().get("error", {})
