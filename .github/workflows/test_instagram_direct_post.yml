@@ -1,0 +1,76 @@
+name: Test Instagram Direct Post (Graph API)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Test Instagram direct post
+        env:
+          INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
+          INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import os
+          import json
+          import requests
+          from pathlib import Path
+
+          # GitHub Secrets から直接読み込む
+          TOKEN = os.environ.get('INSTAGRAM_GRAPH_TOKEN')
+          ACCOUNT_ID = os.environ.get('INSTAGRAM_BUSINESS_ACCOUNT_ID')
+
+          print("📋 Test Instagram Direct Post")
+          print("=" * 60)
+          print(f"✅ Token length: {len(TOKEN)}")
+          print(f"✅ Account ID: {ACCOUNT_ID}")
+          print()
+
+          # import instagram_graph_api_poster
+          import sys
+          sys.path.insert(0, 'scripts')
+          from instagram_graph_api_poster import upload_video_to_instagram
+
+          # Test post
+          result = upload_video_to_instagram(
+              video_url="https://uploads.postiz.com/qv3M9POOXb.mp4",
+              caption="🎯 Test post via Instagram Graph API\nDirect posting (Postiz bypass)",
+              business_account_id=ACCOUNT_ID,
+              graph_token=TOKEN
+          )
+
+          print()
+          print("📋 Result:")
+          print(json.dumps(result, indent=2, ensure_ascii=False))
+
+          # Exit with error if failed
+          if not result.get('success'):
+              exit(1)
+
+          PYTHON_SCRIPT
+
+      - name: Create job summary
+        if: always()
+        run: |
+          echo "## Instagram Direct Post Test" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Test post executed via Instagram Graph API" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check logs for result and Media ID." >> $GITHUB_STEP_SUMMARY
