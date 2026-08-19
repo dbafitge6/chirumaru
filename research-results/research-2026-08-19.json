@@ -1,0 +1,58 @@
+{
+  "timestamp": "2026-08-19T17:20:55.054403",
+  "timezone": "Asia/Tokyo",
+  "results": [
+    {
+      "type": "ga4_analytics",
+      "period": "last_7_days",
+      "rows": [
+        {
+          "date": "20260815",
+          "sessions": "8",
+          "active_users": "4",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260817",
+          "sessions": "7",
+          "active_users": "3",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260818",
+          "sessions": "6",
+          "active_users": "4",
+          "engaged_sessions": "4"
+        },
+        {
+          "date": "20260814",
+          "sessions": "5",
+          "active_users": "4",
+          "engaged_sessions": "2"
+        },
+        {
+          "date": "20260819",
+          "sessions": "5",
+          "active_users": "3",
+          "engaged_sessions": "1"
+        },
+        {
+          "date": "20260816",
+          "sessions": "2",
+          "active_users": "2",
+          "engaged_sessions": "1"
+        }
+      ]
+    },
+    {
+      "type": "new_shops",
+      "count": 0,
+      "shops": []
+    },
+    {
+      "type": "analysis",
+      "suggestions": [],
+      "error": "JSON parse: Unterminated string starting at: line 24 column 28 (char 3741)"
+    }
+  ]
+}
