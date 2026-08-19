@@ -171,7 +171,42 @@ def process_stores(short_tagline_stores):
 
     return results
 
-def generate_log_file(results, short_tagline_stores):
+def update_airtable_records(successful_results):
+    """Update Airtable with new expanded taglines"""
+    if not AIRTABLE_TOKEN:
+        print("Error: AIRTABLE_TOKEN not set")
+        return []
+
+    headers = {'Authorization': f'Bearer {AIRTABLE_TOKEN}'}
+    updated = []
+
+    for result in successful_results:
+        record_id = result['id']
+        new_tagline = result['expansion']
+
+        # Update record via Airtable API
+        url = f'https://api.airtable.com/v0/{AIRTABLE_BASE_ID}/{AIRTABLE_TABLE_ID}/{record_id}'
+        payload = {
+            'fields': {
+                '一言メモ': new_tagline
+            }
+        }
+
+        try:
+            response = requests.patch(url, json=payload, headers=headers)
+            if response.status_code == 200:
+                updated.append({'id': record_id, 'success': True, 'name': result['name']})
+                print(f"✓ Updated {result['name']}: {new_tagline}")
+            else:
+                updated.append({'id': record_id, 'success': False, 'name': result['name'], 'error': response.text})
+                print(f"✗ Failed to update {result['name']}: {response.status_code}")
+        except Exception as e:
+            updated.append({'id': record_id, 'success': False, 'name': result['name'], 'error': str(e)})
+            print(f"✗ Error updating {result['name']}: {e}")
+
+    return updated
+
+def generate_log_file(results, short_tagline_stores, airtable_updates=None):
     """Generate markdown log file"""
     timestamp = datetime.now().strftime('%Y%m%d')
     log_file = f"logs/description_expansion_{timestamp}.md"
@@ -185,23 +220,28 @@ def generate_log_file(results, short_tagline_stores):
 
 ## サマリー
 - 処理対象: {len(short_tagline_stores)} 店舗
-- 成功: {len(successful)} 件
-- 失敗: {len(failed)} 件
+- 拡張案生成成功: {len(successful)} 件
+- 拡張案生成失敗: {len(failed)} 件
 
-## 拡張案一覧
+## 拡張案一覧（成功）
 
-| 店名 | 旧一言 | 新案 | 文字数 |
-|------|--------|------|--------|
+| 店名 | 旧一言 | 新案 | 文字数 | Airtable反映 |
+|------|--------|------|--------|--------------|
 """
 
-    for result in results:
-        if result['success']:
-            content += f"| {result['name']} | {result['old_tagline']} | {result['expansion']} | {result['char_count']} |\n"
+    for result in successful:
+        airtable_status = "✓"
+        if airtable_updates:
+            update_info = next((u for u in airtable_updates if u['id'] == result['id']), None)
+            if update_info:
+                airtable_status = "✓" if update_info['success'] else "✗"
+
+        content += f"| {result['name']} | {result['old_tagline']} | {result['expansion']} | {result['char_count']} | {airtable_status} |\n"
 
     if failed:
-        content += f"\n## 失敗した店舗\n\n| 店名 | 旧一言 | 理由 |\n|------|--------|------|\n"
+        content += f"\n## 拡張案生成失敗（対象外）\n\n| 店名 | 旧一言 | 理由 |\n|------|--------|------|\n"
         for result in failed:
-            content += f"| {result['name']} | {result['old_tagline']} | API エラー |\n"
+            content += f"| {result['name']} | {result['old_tagline']} | 35字以内に収まらない |\n"
 
     with open(log_file, 'w', encoding='utf-8') as f:
         f.write(content)
@@ -236,9 +276,17 @@ def main():
     print(f"\n拡張案を生成中 (最大 {len(short_tagline_stores)} 件)...")
     results = process_stores(short_tagline_stores)
 
+    # Update Airtable
+    successful_results = [r for r in results if r['success']]
+    if successful_results:
+        print(f"\nAirtable を更新中（{len(successful_results)} 件）...")
+        airtable_updates = update_airtable_records(successful_results)
+    else:
+        airtable_updates = []
+
     # Generate log
     print("\nログファイルを生成中...")
-    log_file, success_count, fail_count = generate_log_file(results, short_tagline_stores)
+    log_file, success_count, fail_count = generate_log_file(results, short_tagline_stores, airtable_updates)
     print(f"ログ出力: {log_file}")
 
     # Final report
@@ -246,8 +294,11 @@ def main():
     print("処理完了")
     print("=" * 60)
     print(f"処理数: {len(short_tagline_stores)}")
-    print(f"成功: {success_count}")
-    print(f"失敗: {fail_count}")
+    print(f"拡張案生成成功: {success_count}")
+    print(f"拡張案生成失敗: {fail_count}")
+    if airtable_updates:
+        airtable_success = sum(1 for u in airtable_updates if u['success'])
+        print(f"Airtable反映成功: {airtable_success}/{len(airtable_updates)}")
     print(f"ログファイル: {log_file}")
 
 if __name__ == '__main__':
