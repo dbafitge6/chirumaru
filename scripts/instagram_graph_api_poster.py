@@ -40,11 +40,11 @@ def upload_video_to_instagram(
     media_payload = {
         "video_url": video_url,
         "caption": caption,
-        "media_type": "REELS",
-        "access_token": graph_token
+        "media_type": "REELS"
     }
 
-    media_response = requests.post(media_url, json=media_payload)
+    # トークンはクエリパラメータで渡す
+    media_response = requests.post(media_url, json=media_payload, params={"access_token": graph_token})
 
     if media_response.status_code != 200:
         error_detail = media_response.json().get("error", {})
@@ -64,11 +64,9 @@ def upload_video_to_instagram(
     print(f"  2️⃣ Publishing media...")
 
     publish_url = f"https://graph.facebook.com/{api_version}/{media_id}/release"
-    publish_payload = {
-        "access_token": graph_token
-    }
 
-    publish_response = requests.post(publish_url, json=publish_payload)
+    # トークンはクエリパラメータで渡す
+    publish_response = requests.post(publish_url, params={"access_token": graph_token})
 
     if publish_response.status_code != 200:
         error_detail = publish_response.json().get("error", {})
@@ -87,6 +85,16 @@ def upload_video_to_instagram(
 
 
 if __name__ == "__main__":
+    # .env ファイルを読み込む
+    env_file = Path(__file__).parent.parent / ".env"
+    if env_file.exists():
+        with open(env_file) as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#"):
+                    key, value = line.split("=", 1)
+                    os.environ[key.strip()] = value.strip()
+
     # テスト用
     token = os.environ.get("INSTAGRAM_GRAPH_TOKEN")
     account_id = os.environ.get("INSTAGRAM_BUSINESS_ACCOUNT_ID")
