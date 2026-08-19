@@ -1,0 +1,44 @@
+name: Update Target Records
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install requests
+
+      - name: Run update script
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+        run: |
+          python3 scripts/update_target_records.py
+
+      - name: Create job summary
+        if: always()
+        run: |
+          echo "## Target Records Update" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Update execution completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Changes:" >> $GITHUB_STEP_SUMMARY
+          echo "- dessert café marutoshikaku: 一言メモ更新" >> $GITHUB_STEP_SUMMARY
+          echo "- sugar snow: 一言メモ更新" >> $GITHUB_STEP_SUMMARY
+          echo "- gelateria nina 板倉店（1号店）: 一言メモ更新" >> $GITHUB_STEP_SUMMARY
+          echo "- gelateria nina 本町店（2号店）: 新規作成" >> $GITHUB_STEP_SUMMARY
