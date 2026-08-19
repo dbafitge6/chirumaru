@@ -30,9 +30,23 @@ jobs:
         run: |
           python3 scripts/check_target_records.py
 
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-records-info
+          path: logs/target_records_info.md
+          retention-days: 7
+
       - name: Create job summary
         if: always()
         run: |
           echo "## Target Records Check" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "✅ Script executed" >> $GITHUB_STEP_SUMMARY
+          if [ -f logs/target_records_info.md ]; then
+            echo "✅ Results:" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat logs/target_records_info.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ No results file generated" >> $GITHUB_STEP_SUMMARY
+          fi

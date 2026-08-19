@@ -49,12 +49,13 @@ def fetch_airtable_records():
     return all_records
 
 def main():
-    print("=" * 100)
-    print("要確認2件のレコード詳細情報取得")
-    print("=" * 100)
+    output = []
+    output.append("=" * 100)
+    output.append("要確認2件のレコード詳細情報取得")
+    output.append("=" * 100)
 
     records = fetch_airtable_records()
-    print(f"\n取得完了: {len(records)} 件")
+    output.append(f"\n取得完了: {len(records)} 件")
 
     # Find target records
     target_records = {}
@@ -67,30 +68,39 @@ def main():
         elif 'sugar snow' in name:
             target_records['sugar snow'] = record
 
-    # Print details
-    print("\n" + "=" * 100)
-    print("詳細情報")
-    print("=" * 100)
+    # Prepare details
+    output.append("\n" + "=" * 100)
+    output.append("詳細情報")
+    output.append("=" * 100)
 
     for store_name in ['gelateria nina', 'sugar snow']:
         record = target_records.get(store_name)
 
         if record:
             fields = record.get('fields', {})
-            print(f"\n【{store_name}】")
-            print(f"  Record ID: {record.get('id')}")
-            print(f"  店名: {fields.get('Store Name', 'N/A')}")
-            print(f"  一言メモ: '{fields.get('一言メモ', 'N/A')}'")
-            print(f"  説明: {fields.get('説明', 'N/A')}")
-            print(f"  メニュー: {fields.get('メニュー', 'N/A')}")
-            print(f"  営業時間: {fields.get('営業時間', 'N/A')}")
-            print(f"  住所: {fields.get('住所', 'N/A')}")
-            print(f"  営業形態: {fields.get('営業形態', 'N/A')}")
-            print(f"  シーンタグ: {fields.get('シーンタグ', [])}")
-            print(f"  タグ: {fields.get('タグ', [])}")
+            output.append(f"\n【{store_name}】")
+            output.append(f"  Record ID: {record.get('id')}")
+            output.append(f"  店名: {fields.get('Store Name', 'N/A')}")
+            output.append(f"  一言メモ: '{fields.get('一言メモ', 'N/A')}'")
+            output.append(f"  説明: {fields.get('説明', 'N/A')}")
+            output.append(f"  メニュー: {fields.get('メニュー', 'N/A')}")
+            output.append(f"  営業時間: {fields.get('営業時間', 'N/A')}")
+            output.append(f"  住所: {fields.get('住所', 'N/A')}")
+            output.append(f"  営業形態: {fields.get('営業形態', 'N/A')}")
+            output.append(f"  シーンタグ: {fields.get('シーンタグ', [])}")
+            output.append(f"  タグ: {fields.get('タグ', [])}")
         else:
-            print(f"\n【{store_name}】")
-            print("  Not found in database")
+            output.append(f"\n【{store_name}】")
+            output.append("  Not found in database")
+
+    # Print to stdout
+    result_text = "\n".join(output)
+    print(result_text)
+
+    # Save to file
+    Path("logs").mkdir(exist_ok=True)
+    with open("logs/target_records_info.md", 'w', encoding='utf-8') as f:
+        f.write(result_text)
 
 if __name__ == '__main__':
     main()
