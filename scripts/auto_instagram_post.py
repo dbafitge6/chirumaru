@@ -768,35 +768,39 @@ if DRY_RUN:
     print(f"✅ シーン「{selected_scene}」の記録（ドライランのため実際には保存せず）")
 else:
     try:
-        # Step 4.1: Postiz にアップロード（動画ホスティングのみ）
-        print("\n📤 動画を Postiz にアップロード中（ホスティング）...")
-        upload_cmd = ['postiz', 'upload', str(final_video_path)]
-        upload_result = subprocess.run(upload_cmd, capture_output=True, text=True, timeout=120)
+        # Step 4.1: Postiz REST API でアップロード（動画ホスティングのみ）
+        print("\n📤 動画を Postiz にアップロード中（REST API）...")
 
-        if upload_result.returncode != 0:
-            print(f"❌ Postiz アップロード失敗")
-            print(f"stderr: {upload_result.stderr}")
+        postiz_api_key = os.environ.get('POSTIZ_API_KEY')
+        if not postiz_api_key:
+            print(f"❌ POSTIZ_API_KEY が設定されていません")
             sys.exit(1)
 
-        # アップロード結果から URL を抽出
-        output_lines = upload_result.stdout.strip().split('\n')
-        json_start = -1
-        for i, line in enumerate(output_lines):
-            if line.strip().startswith('{'):
-                json_start = i
-                break
+        # ファイルをバイナリで読み込む
+        with open(final_video_path, 'rb') as f:
+            files = {'file': f}
+            headers = {'X-API-Key': postiz_api_key}
 
-        if json_start == -1:
-            print(f"❌ Postiz レスポンスが JSON でない")
-            print(f"レスポンス: {upload_result.stdout}")
+            # Postiz REST API: POST /api/v1/upload
+            upload_response = requests.post(
+                'https://api.postiz.com/api/v1/upload',
+                files=files,
+                headers=headers,
+                timeout=300
+            )
+
+        if upload_response.status_code not in [200, 201]:
+            error_detail = upload_response.json() if upload_response.headers.get('content-type') == 'application/json' else upload_response.text
+            print(f"❌ Postiz API アップロード失敗: {upload_response.status_code}")
+            print(f"Response: {error_detail}")
             sys.exit(1)
 
-        json_str = '\n'.join(output_lines[json_start:])
-        upload_data = json.loads(json_str)
-        video_url = upload_data.get('path')
+        upload_data = upload_response.json()
+        video_url = upload_data.get('url') or upload_data.get('path')
+
         if not video_url:
-            print(f"❌ Postiz URL が取得できません")
-            print(f"レスポンス: {upload_result.stdout}")
+            print(f"❌ Postiz API から URL が取得できません")
+            print(f"Response: {upload_data}")
             sys.exit(1)
 
         print(f"✅ ホスティング完了: {video_url}")
