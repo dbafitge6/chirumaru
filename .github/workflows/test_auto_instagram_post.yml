@@ -32,6 +32,7 @@ jobs:
       - name: Run auto Instagram post script
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
           INSTAGRAM_GRAPH_TOKEN: ${{ secrets.INSTAGRAM_GRAPH_TOKEN }}
           INSTAGRAM_BUSINESS_ACCOUNT_ID: ${{ secrets.INSTAGRAM_BUSINESS_ACCOUNT_ID }}
         run: |
