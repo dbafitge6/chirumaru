@@ -25,14 +25,17 @@ jobs:
           pip install anthropic requests
 
       - name: Verify API keys
+        env:
+          AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          CONSULTANT_API_KEY: ${{ secrets.CONSULTANT_API_KEY }}
         run: |
           echo "✅ AIRTABLE_TOKEN: ${#AIRTABLE_TOKEN} chars"
-          echo "✅ ANTHROPIC_API_KEY: ${#ANTHROPIC_API_KEY} chars"
+          echo "✅ CONSULTANT_API_KEY: ${#CONSULTANT_API_KEY} chars"
 
       - name: Run expand_taglines script
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CONSULTANT_API_KEY: ${{ secrets.CONSULTANT_API_KEY }}
         run: |
           echo "📋 Running tagline expansion script..."
           python3 scripts/expand_taglines.py
