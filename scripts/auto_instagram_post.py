@@ -776,47 +776,31 @@ else:
             print(f"❌ POSTIZ_API_KEY が設定されていません")
             sys.exit(1)
 
+        # Postiz Public API: POST /public/v1/upload
+        # https://docs.postiz.com/public-api
+        upload_url = 'https://api.postiz.com/public/v1/upload'
+        headers = {'Authorization': postiz_api_key}
+
         # ファイルをバイナリで読み込む
         with open(final_video_path, 'rb') as f:
-            file_content = f.read()
+            files = {'file': ('video.mp4', f, 'video/mp4')}
 
-        headers = {'Authorization': f'Bearer {postiz_api_key}'}
+            print(f"  Uploading to: {upload_url}")
+            upload_response = requests.post(
+                upload_url,
+                files=files,
+                headers=headers,
+                timeout=300
+            )
 
-        # Postiz API エンドポイント候補（推測）
-        upload_endpoints = [
-            'https://api.postiz.com/v1/upload',
-            'https://api.postiz.com/upload',
-            'https://api.postiz.com/api/upload',
-        ]
-
-        upload_response = None
-        for endpoint in upload_endpoints:
-            print(f"  Trying: {endpoint}")
-            try:
-                files = {'file': ('video.mp4', file_content, 'video/mp4')}
-                upload_response = requests.post(
-                    endpoint,
-                    files=files,
-                    headers=headers,
-                    timeout=300
-                )
-
-                if upload_response.status_code in [200, 201]:
-                    print(f"  ✅ Success with {endpoint}")
-                    break
-                else:
-                    print(f"  ❌ {upload_response.status_code}")
-            except Exception as e:
-                print(f"  ❌ Error: {e}")
-
-        if not upload_response or upload_response.status_code not in [200, 201]:
-            error_detail = upload_response.json() if upload_response and upload_response.headers.get('content-type') == 'application/json' else (upload_response.text if upload_response else 'Unknown error')
-            print(f"❌ Postiz API アップロード失敗")
+        if upload_response.status_code not in [200, 201]:
+            error_detail = upload_response.json() if upload_response.headers.get('content-type') == 'application/json' else upload_response.text
+            print(f"❌ Postiz API アップロード失敗: {upload_response.status_code}")
             print(f"Response: {error_detail}")
             sys.exit(1)
 
         upload_data = upload_response.json()
-        video_url = upload_data.get('url') or upload_data.get('path') or upload_data.get('file_url')
+        video_url = upload_data.get('path')
 
         if not video_url:
             print(f"❌ Postiz API から URL が取得できません")
