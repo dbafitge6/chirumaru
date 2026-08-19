@@ -24,41 +24,15 @@ jobs:
           pip install --upgrade pip
           pip install anthropic requests
 
-      - name: Try different API key names
+      - name: Verify API keys
         run: |
-          echo "Testing API key availability..."
-
-          # 可能性のあるキー名をテスト
-          for KEY_NAME in ANTHROPIC_ADVISOR_API_KEY ADVISOR_ANTHROPIC_API_KEY ANTHROPIC_API_KEY_ADVISOR CLAUDE_ADVISOR_API_KEY; do
-            VALUE=$(eval echo \$$KEY_NAME)
-            if [ -z "$VALUE" ]; then
-              echo "❌ $KEY_NAME: not set"
-            else
-              echo "✅ $KEY_NAME: found (${#VALUE} chars)"
-              export FOUND_KEY_NAME=$KEY_NAME
-              export FOUND_API_KEY=$VALUE
-            fi
-          done
-
-          # 見つかったキーを環境変数に保存
-          if [ -z "$FOUND_API_KEY" ]; then
-            echo "❌ No API key found in any expected secret name"
-            exit 1
-          fi
-
-          echo "Using key: $FOUND_KEY_NAME"
-          echo "ANTHROPIC_API_KEY=$FOUND_API_KEY" >> $GITHUB_ENV
-
-        env:
-          ANTHROPIC_ADVISOR_API_KEY: ${{ secrets.ANTHROPIC_ADVISOR_API_KEY }}
-          ADVISOR_ANTHROPIC_API_KEY: ${{ secrets.ADVISOR_ANTHROPIC_API_KEY }}
-          ANTHROPIC_API_KEY_ADVISOR: ${{ secrets.ANTHROPIC_API_KEY_ADVISOR }}
-          CLAUDE_ADVISOR_API_KEY: ${{ secrets.CLAUDE_ADVISOR_API_KEY }}
+          echo "✅ AIRTABLE_TOKEN: ${#AIRTABLE_TOKEN} chars"
+          echo "✅ ANTHROPIC_API_KEY: ${#ANTHROPIC_API_KEY} chars"
 
       - name: Run expand_taglines script
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
-          ANTHROPIC_API_KEY: ${{ env.ANTHROPIC_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
           echo "📋 Running tagline expansion script..."
           python3 scripts/expand_taglines.py
