@@ -759,8 +759,8 @@ else:
         print(f"⚠️  BGM ファイルが見つかりません: {BGM_PATH}")
         final_video_path = video_path
 
-# Step 4: Postiz で投稿（ドライランモードでスキップ可能）
-print("\n【Step 4】Postiz で投稿")
+# Step 4: 動画をホスティング & Instagram に直接投稿
+print("\n【Step 4】Postiz ホスティング & Instagram Graph API 投稿")
 print("=" * 70)
 
 if DRY_RUN:
@@ -768,8 +768,8 @@ if DRY_RUN:
     print(f"✅ シーン「{selected_scene}」の記録（ドライランのため実際には保存せず）")
 else:
     try:
-        # Step 4.1: 合成ビデオを Postiz にアップロード
-        print("\n📤 ビデオを Postiz にアップロード中...")
+        # Step 4.1: Postiz にアップロード（動画ホスティングのみ）
+        print("\n📤 動画を Postiz にアップロード中（ホスティング）...")
         upload_cmd = ['postiz', 'upload', str(final_video_path)]
         upload_result = subprocess.run(upload_cmd, capture_output=True, text=True, timeout=120)
 
@@ -779,7 +779,6 @@ else:
             sys.exit(1)
 
         # アップロード結果から URL を抽出
-        # JSON 部分だけを抽出（メッセージが前置きされているため）
         output_lines = upload_result.stdout.strip().split('\n')
         json_start = -1
         for i, line in enumerate(output_lines):
@@ -794,89 +793,98 @@ else:
 
         json_str = '\n'.join(output_lines[json_start:])
         upload_data = json.loads(json_str)
-        postiz_video_url = upload_data.get('path')
-        if not postiz_video_url:
+        video_url = upload_data.get('path')
+        if not video_url:
             print(f"❌ Postiz URL が取得できません")
             print(f"レスポンス: {upload_result.stdout}")
             sys.exit(1)
 
-        print(f"✅ アップロード完了: {postiz_video_url}")
+        print(f"✅ ホスティング完了: {video_url}")
 
-        # Step 4.2: Postiz API で投稿作成（スケジュール即座実行）
-        print("\n📱 Instagram に投稿中...")
-        from datetime import timedelta
-        schedule_time = (datetime.now(timezone.utc) + timedelta(seconds=1)).isoformat().replace('+00:00', 'Z')
-        postiz_cmd = [
-            'postiz', 'posts:create',
-            '-c', caption,
-            '-m', postiz_video_url,
-            '-s', schedule_time,
-            '--settings', '{"post_type":"post"}',
-            '-i', INSTAGRAM_INTEGRATION_ID
-        ]
+        # Step 4.2: Instagram Graph API で直接投稿
+        print("\n📱 Instagram Graph API で投稿中...")
 
-        result = subprocess.run(postiz_cmd, capture_output=True, text=True, timeout=30)
+        # instagram_graph_api_poster をインポート
+        sys.path.insert(0, str(Path(__file__).parent))
+        from instagram_graph_api_poster import upload_video_to_instagram
 
-        if result.returncode == 0:
-            print(f"✅ 投稿成功！")
-            print(result.stdout)
+        # 環境変数から Instagram トークンを取得
+        instagram_token = AIRTABLE_TOKEN  # 一時的に流用
+        # 実際には環境変数から直接取得
+        instagram_token = os.environ.get('INSTAGRAM_GRAPH_TOKEN')
+        if not instagram_token:
+            print(f"❌ INSTAGRAM_GRAPH_TOKEN が設定されていません")
+            sys.exit(1)
 
-            # 投稿履歴を記録（店舗とシーン）
-            today = datetime.now().strftime("%Y-%m-%d")
+        instagram_business_account_id = os.environ.get('INSTAGRAM_BUSINESS_ACCOUNT_ID')
+        if not instagram_business_account_id:
+            print(f"❌ INSTAGRAM_BUSINESS_ACCOUNT_ID が設定されていません")
+            sys.exit(1)
 
-            # 店舗の記録
-            posted_data = []
-            if POSTED_STORES_FILE.exists():
-                with open(POSTED_STORES_FILE, 'r', encoding='utf-8') as f:
-                    posted_data = json.load(f)
+        post_result = upload_video_to_instagram(
+            video_url=video_url,
+            caption=caption,
+            business_account_id=instagram_business_account_id,
+            graph_token=instagram_token
+        )
 
-            for shop in selected_3:
-                posted_data.append({
-                    "id": shop['id'],
-                    "name": shop['name'],
-                    "date": today
-                })
+        if not post_result.get('success'):
+            print(f"❌ Instagram 投稿失敗: {post_result.get('error')}")
+            sys.exit(1)
 
-            with open(POSTED_STORES_FILE, 'w', encoding='utf-8') as f:
-                json.dump(posted_data, f, ensure_ascii=False, indent=2)
+        media_id = post_result.get('media_id')
+        print(f"✅ Instagram 投稿成功！ Media ID: {media_id}")
 
-            # シーンの記録
-            posted_scenes_data = []
-            if POSTED_SCENES_FILE.exists():
-                with open(POSTED_SCENES_FILE, 'r', encoding='utf-8') as f:
-                    posted_scenes_data = json.load(f)
+        # 投稿履歴を記録（店舗とシーン）
+        today = datetime.now().strftime("%Y-%m-%d")
 
-            posted_scenes_data.append({
-                "scene": selected_scene,
+        # 店舗の記録
+        posted_data = []
+        if POSTED_STORES_FILE.exists():
+            with open(POSTED_STORES_FILE, 'r', encoding='utf-8') as f:
+                posted_data = json.load(f)
+
+        for shop in selected_3:
+            posted_data.append({
+                "id": shop['id'],
+                "name": shop['name'],
                 "date": today
             })
 
-            with open(POSTED_SCENES_FILE, 'w', encoding='utf-8') as f:
-                json.dump(posted_scenes_data, f, ensure_ascii=False, indent=2)
+        with open(POSTED_STORES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(posted_data, f, ensure_ascii=False, indent=2)
 
-            print(f"✅ 投稿履歴を {POSTED_STORES_FILE} に記録しました")
+        # シーンの記録
+        posted_scenes_data = []
+        if POSTED_SCENES_FILE.exists():
+            with open(POSTED_SCENES_FILE, 'r', encoding='utf-8') as f:
+                posted_scenes_data = json.load(f)
 
-            # Git コミット＆プッシュで永続化
-            try:
-                subprocess.run(['git', 'add', str(POSTED_STORES_FILE), str(POSTED_SCENES_FILE)], cwd=Path(__file__).parent.parent, check=True, capture_output=True)
-                subprocess.run([
-                    'git', 'commit', '-m',
-                    f"Update: add posted stores and scene ({today})",
-                    '--author', 'Claude Code <noreply@anthropic.com>'
-                ], cwd=Path(__file__).parent.parent, check=True, capture_output=True)
-                subprocess.run(['git', 'push', 'github', 'main'], cwd=Path(__file__).parent.parent, check=True, capture_output=True, timeout=30)
-                print(f"✅ Git コミット＆プッシュ完了")
-            except Exception as git_e:
-                print(f"⚠️  Git 操作エラー（投稿は成功）: {git_e}")
+        posted_scenes_data.append({
+            "scene": selected_scene,
+            "date": today
+        })
 
-        else:
-            print(f"❌ Postiz エラー")
-            print(f"stderr: {result.stderr}")
-            print(f"stdout: {result.stdout}")
-            sys.exit(1)
+        with open(POSTED_SCENES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(posted_scenes_data, f, ensure_ascii=False, indent=2)
+
+        print(f"✅ 投稿履歴を {POSTED_STORES_FILE} に記録しました")
+
+        # Git コミット＆プッシュで永続化
+        try:
+            subprocess.run(['git', 'add', str(POSTED_STORES_FILE), str(POSTED_SCENES_FILE)], cwd=Path(__file__).parent.parent, check=True, capture_output=True)
+            subprocess.run([
+                'git', 'commit', '-m',
+                f"chore: update instagram post records ({today})",
+                '--author', 'Claude Code <noreply@anthropic.com>'
+            ], cwd=Path(__file__).parent.parent, check=True, capture_output=True)
+            subprocess.run(['git', 'push', 'github', 'main'], cwd=Path(__file__).parent.parent, check=True, capture_output=True, timeout=30)
+            print(f"✅ Git コミット＆プッシュ完了")
+        except Exception as git_e:
+            print(f"⚠️  Git 操作エラー（投稿は成功）: {git_e}")
 
     except subprocess.TimeoutExpired:
-        print(f"❌ エラー: Postiz コマンドがタイムアウト（30秒以上）")
+        print(f"❌ エラー: Postiz アップロードがタイムアウト（120秒以上）")
         sys.exit(1)
     except Exception as e:
         print(f"❌ エラー: {e}")
