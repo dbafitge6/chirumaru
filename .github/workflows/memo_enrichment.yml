@@ -39,13 +39,13 @@ jobs:
         if: always()
         run: |
           if [ -f logs/memo_enrichment_summary.json ]; then
-            python3 -c "
-              import json
-              with open('logs/memo_enrichment_summary.json') as f:
-                data = json.load(f)
-            print(f'### Memo Enrichment Results')
-            print(f'- Processed: {data.get(\"total_processed\", 0)}')
-            print(f'- Verified: {data.get(\"verified_count\", 0)}')
-            print(f'- Unverified: {data.get(\"unverified_count\", 0)}')
-            " >> $GITHUB_STEP_SUMMARY
+            python3 << 'EOF' >> $GITHUB_STEP_SUMMARY
+          import json
+          with open('logs/memo_enrichment_summary.json') as f:
+            data = json.load(f)
+          print(f'### Memo Enrichment Results')
+          print(f'- Processed: {data.get("total_processed", 0)}')
+          print(f'- Verified: {data.get("verified_count", 0)}')
+          print(f'- Unverified: {data.get("unverified_count", 0)}')
+          EOF
           fi
