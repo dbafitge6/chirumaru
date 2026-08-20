@@ -9,9 +9,17 @@ set +e
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 LOGS_DIR="$REPO_ROOT/logs"
 LOG_FILE="$LOGS_DIR/advisor_checks.md"
+LOG_MAX_SIZE=50000  # Rotate log if it exceeds ~50KB
 
 mkdir -p "$LOGS_DIR"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+# Rotate log if it exceeds max size
+if [ -f "$LOG_FILE" ] && [ "$(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null || echo 0)" -gt "$LOG_MAX_SIZE" ]; then
+    ARCHIVE="$LOGS_DIR/advisor_checks.archive.$(date -u +"%Y%m%d_%H%M%S").md"
+    mv "$LOG_FILE" "$ARCHIVE"
+    echo "Log rotated: $ARCHIVE"
+fi
 
 log_check() {
     local status="$1"
