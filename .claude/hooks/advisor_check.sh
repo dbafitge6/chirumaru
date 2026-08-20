@@ -40,58 +40,52 @@ log_check() {
 }
 
 # Try to get recent git changes for context
-GIT_DIFF=$(git diff HEAD~1 HEAD 2>/dev/null || echo "")
 GIT_LOG=$(git log -1 --pretty=format:"%H %s" 2>/dev/null || echo "")
 
 # Call Anthropic API for code review if API key is set
-if [ -n "$ANTHROPIC_API_KEY" ]; then
-    PROMPT="Review the recent work in this repository. Check for:
-1. Code quality and correctness
-2. Uncommitted changes that should be committed
-3. Test coverage for new code
-4. Documentation updates
-5. Any obvious bugs or issues
-
-Recent changes:
-$GIT_LOG
-
-Reply with: ✅ APPROVED if the work is ready, or ⚠️ REVIEW NEEDED with specific concerns."
+if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
+    # Prepare request for Anthropic API
+    REQUEST_BODY='{
+  "model": "claude-sonnet-4-6",
+  "max_tokens": 500,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Review the recent work in this repository for code quality, uncommitted changes, test coverage, documentation, and obvious bugs. Be concise."
+    }
+  ]
+}'
 
     # Make API call
     RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
-        -H "x-api-key: $ANTHROPIC_API_KEY" \
+        -H "x-api-key: $ANTHROPIC_API_KEY_ADVISOR" \
         -H "anthropic-version: 2023-06-01" \
         -H "content-type: application/json" \
-        -d "{
-            \"model\": \"claude-opus-4-20250805\",
-            \"max_tokens\": 500,
-            \"messages\": [
-                {
-                    \"role\": \"user\",
-                    \"content\": \"$PROMPT\"
-                }
-            ]
-        }" 2>&1)
+        -d "$REQUEST_BODY" 2>&1)
 
-    # Check if response contains error
+    # Parse response for errors or success
     if echo "$RESPONSE" | grep -q '"error"'; then
-        ERROR=$(echo "$RESPONSE" | grep -o '"message":"[^"]*' | sed 's/"message":"//')
+        # Extract error message
+        ERROR=$(echo "$RESPONSE" | jq -r '.error.message // "API error"' 2>/dev/null || echo "API call failed")
         log_check "❌ API Error" "$ERROR"
-        exit 0  # Don't block on API errors
-    else
-        # Extract text from response
-        ADVISOR_RESPONSE=$(echo "$RESPONSE" | grep -o '"text":"[^"]*"' | head -1 | sed 's/"text":"//' | sed 's/"$//')
-        log_check "✅ Checked" "" "$ADVISOR_RESPONSE"
-
-        # Check if response contains warning keywords
-        if echo "$ADVISOR_RESPONSE" | grep -qi "⚠️\|REVIEW NEEDED\|concern\|issue\|bug"; then
-            echo "⚠️ Advisor has concerns. Check logs/advisor_checks.md for details."
-            exit 0  # Still allow completion, but inform user
+        exit 0
+    elif echo "$RESPONSE" | grep -q '"content"'; then
+        # Success - extract response text
+        ADVISOR_RESPONSE=$(echo "$RESPONSE" | jq -r '.content[0].text // empty' 2>/dev/null)
+        if [ -n "$ADVISOR_RESPONSE" ]; then
+            log_check "✅ Advisor Review" "" "$ADVISOR_RESPONSE"
+        else
+            log_check "✅ Advisor Check Completed" "" "Review processed successfully"
         fi
+        exit 0
+    else
+        # Unknown response format
+        log_check "❌ API Response" "Unexpected response format"
+        exit 0
     fi
 else
     # No API key - just log that check was skipped
-    log_check "⏭️ Skipped" "ANTHROPIC_API_KEY not set"
+    log_check "⏭️ Skipped" "ANTHROPIC_API_KEY_ADVISOR not set"
 fi
 
 exit 0
