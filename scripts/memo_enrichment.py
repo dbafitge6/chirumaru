@@ -41,28 +41,49 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
     headers = {'Authorization': f'Bearer {token}'}
     url = f'https://api.airtable.com/v0/{BASE_ID}/{TABLE_ID}'
 
-    # Filter: memo < 20 chars OR tags <= 1
-    filter_formula = 'OR(LEN(COALESCE({一言メモ}, "")) < 20, LEN(COALESCE({タグ}, "")) <= 1)'
+    all_records = []
+    offset = None
 
-    response = requests.get(
-        url,
-        headers=headers,
-        params={'filterByFormula': filter_formula, 'pageSize': 100}
-    )
+    # Fetch all records with pagination
+    while True:
+        params = {'pageSize': 100}
+        if offset:
+            params['offset'] = offset
 
-    if response.status_code != 200:
-        raise RuntimeError(f"Airtable API error: {response.status_code} {response.text}")
+        response = requests.get(url, headers=headers, params=params)
 
-    data = response.json()
-    if 'error' in data:
-        raise RuntimeError(f"Airtable API error: {data['error']}")
+        if response.status_code != 200:
+            raise RuntimeError(f"Airtable API error: {response.status_code} {response.text}")
 
-    records = data.get('records', [])
+        data = response.json()
+        if 'error' in data:
+            raise RuntimeError(f"Airtable API error: {data['error']}")
+
+        all_records.extend(data.get('records', []))
+        offset = data.get('offset')
+        if not offset:
+            break
+
+    # Filter in Python: memo < 20 chars OR tags <= 1
     processed = load_processed_records()
+    result = []
 
-    # Filter out already processed records
-    result = [r for r in records if r['id'] not in processed]
-    return result[:MAX_BATCH_SIZE]
+    for record in all_records:
+        if record['id'] in processed:
+            continue
+
+        fields = record.get('fields', {})
+        memo = fields.get('一言メモ', '').strip()
+        tags = fields.get('タグ', '')
+
+        # Check if memo is short or tags are insufficient
+        if len(memo) < 20 or (isinstance(tags, list) and len(tags) <= 1) or (isinstance(tags, str) and len(tags.split(',')) <= 1):
+            result.append(record)
+
+        if len(result) >= MAX_BATCH_SIZE:
+            break
+
+    return result
 
 def generate_memo(shop_name: str, area: str, menu_or_features: str, web_content: str) -> Optional[str]:
     """Generate a memo using Claude API"""
