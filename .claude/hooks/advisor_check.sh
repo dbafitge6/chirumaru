@@ -10,15 +10,31 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 LOGS_DIR="$REPO_ROOT/logs"
 LOG_FILE="$LOGS_DIR/advisor_checks.md"
 LOG_MAX_SIZE=50000  # Rotate log if it exceeds ~50KB
+ARCHIVE_RETENTION=5  # Keep last N archive files
 
 mkdir -p "$LOGS_DIR"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 # Rotate log if it exceeds max size
-if [ -f "$LOG_FILE" ] && [ "$(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null || echo 0)" -gt "$LOG_MAX_SIZE" ]; then
-    ARCHIVE="$LOGS_DIR/advisor_checks.archive.$(date -u +"%Y%m%d_%H%M%S").md"
-    mv "$LOG_FILE" "$ARCHIVE"
-    echo "Log rotated: $ARCHIVE"
+if [ -f "$LOG_FILE" ]; then
+    FILE_SIZE=$(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null)
+    if [ -z "$FILE_SIZE" ]; then
+        echo "⚠️ Warning: Could not determine log file size (stat failed)" >&2
+        FILE_SIZE=0
+    fi
+
+    if [ "$FILE_SIZE" -gt "$LOG_MAX_SIZE" ]; then
+        ARCHIVE="$LOGS_DIR/advisor_checks.archive.$(date -u +"%Y%m%d_%H%M%S").md"
+        mv "$LOG_FILE" "$ARCHIVE"
+        echo "Log rotated: $ARCHIVE"
+
+        # Clean up old archives, keep only the last N
+        ARCHIVE_COUNT=$(ls -1 "$LOGS_DIR"/advisor_checks.archive.*.md 2>/dev/null | wc -l)
+        if [ "$ARCHIVE_COUNT" -gt "$ARCHIVE_RETENTION" ]; then
+            EXCESS=$((ARCHIVE_COUNT - ARCHIVE_RETENTION))
+            ls -1t "$LOGS_DIR"/advisor_checks.archive.*.md | tail -n "$EXCESS" | xargs rm -f
+        fi
+    fi
 fi
 
 log_check() {
