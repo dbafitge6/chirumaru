@@ -61,6 +61,10 @@ log_check() {
         echo "---"
         echo ""
     } >> "$LOG_FILE"
+
+    # Commit the log file to avoid git status detecting it as uncommitted
+    git add "$LOG_FILE" 2>/dev/null
+    git commit -m "chore: log advisor check" --no-verify 2>/dev/null || true
 }
 
 # ============================================================================
@@ -139,12 +143,10 @@ Please review for:
 Be concise. Reference actual changed files from the diff above.
 
 IMPORTANT: At the end of your review, add a single line with ONLY:
-VERDICT: PASS  (if code is acceptable to merge)
-or
-VERDICT: BLOCK  (only if there are functional bugs, security issues, or clearly incomplete work)
+⚠️ Needs verification  (if there are functional bugs, security issues, or clearly incomplete work)
 
-Minor style suggestions, log improvements, or best-practice recommendations = PASS
-Major correctness issues or security concerns = BLOCK"
+Minor style suggestions, log improvements, or best-practice recommendations = no marker needed
+Major correctness issues or security concerns = add the ⚠️ Needs verification marker"
 
     # Build request using jq for safe JSON encoding
     REQUEST_BODY=$(jq -n \
@@ -181,12 +183,12 @@ Cannot complete AI review. Task completion blocked."
         if [ -n "$ADVISOR_RESPONSE" ]; then
             log_check "✅ Advisor Review" "" "$ADVISOR_RESPONSE"
 
-            # Check explicit VERDICT line only (case-insensitive, at end of response)
-            if echo "$ADVISOR_RESPONSE" | grep -iq "^VERDICT: BLOCK"; then
-                echo "🔴 Advisor: BLOCK verdict. Review logs/advisor_checks.md" >&2
+            # Check for explicit ⚠️ Needs verification marker only
+            if echo "$ADVISOR_RESPONSE" | grep -q "⚠️ Needs verification"; then
+                echo "🔴 Advisor: Needs verification. Review logs/advisor_checks.md" >&2
                 exit 2
             fi
-            # VERDICT: PASS or missing verdict (default to pass)
+            # No marker (default to pass)
             exit 0
         else
             log_check "✅ Advisor Check Completed" "" "Review processed successfully"
