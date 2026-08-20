@@ -136,19 +136,28 @@ Web検索結果:
 
         # Extract text blocks (filter out thinking blocks)
         # ThinkingBlock objects don't have .text attribute, so filter by type
+        print(f"[DEBUG] Response content blocks: {len(response.content)}")
         text_blocks = []
         for block in response.content:
+            print(f"[DEBUG] Block type: {type(block)}, hasattr type: {hasattr(block, 'type')}")
+            if hasattr(block, 'type'):
+                print(f"[DEBUG] Block.type = {block.type}")
             if hasattr(block, 'type') and block.type == "text" and hasattr(block, 'text'):
                 text_blocks.append(block.text)
+        print(f"[DEBUG] Extracted {len(text_blocks)} text blocks")
 
         memo = "".join(text_blocks).strip()
 
         # Validate length and non-empty
+        print(f"[DEBUG] Memo validation: len={len(memo)}, content='{memo}'")
         if len(memo) <= 35 and memo:
+            print(f"[DEBUG] Memo valid, returning: {memo}")
             return memo
         else:
             if memo:
-                print(f"Memo too long ({len(memo)} chars): {memo[:50]}", file=sys.stderr)
+                print(f"[DEBUG] Memo too long ({len(memo)} chars): {memo[:50]}")
+            else:
+                print(f"[DEBUG] Memo is empty or None")
             return None
     except Exception as e:
         import traceback
