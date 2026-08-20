@@ -119,10 +119,13 @@ Web検索結果:
                 {'role': 'user', 'content': prompt}
             ]
         )
-        memo = response.content[0].text.strip()
+
+        # Extract text blocks (filter out thinking blocks)
+        text_blocks = [block.text for block in response.content if block.type == "text"]
+        memo = "".join(text_blocks).strip()
 
         # Validate length
-        if len(memo) <= 35:
+        if len(memo) <= 35 and memo:
             return memo
         else:
             return None
