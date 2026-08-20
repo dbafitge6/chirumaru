@@ -79,16 +79,18 @@ fi
 # ============================================================================
 
 if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
-    REQUEST_BODY='{
-  "model": "claude-sonnet-4-6",
-  "max_tokens": 500,
-  "messages": [
+    # Use a test model ID if ADVISOR_TEST_MODE is set (for testing API error handling)
+    TEST_MODEL="${ADVISOR_TEST_MODEL:-claude-sonnet-4-6}"
+    REQUEST_BODY="{
+  \"model\": \"$TEST_MODEL\",
+  \"max_tokens\": 500,
+  \"messages\": [
     {
-      "role": "user",
-      "content": "Review the recent work in this repository for code quality, uncommitted changes, test coverage, documentation, and obvious bugs. Be concise."
+      \"role\": \"user\",
+      \"content\": \"Review the recent work in this repository for code quality, uncommitted changes, test coverage, documentation, and obvious bugs. Be concise.\"
     }
   ]
-}'
+}"
 
     RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
         -H "x-api-key: $ANTHROPIC_API_KEY_ADVISOR" \
@@ -98,8 +100,13 @@ if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
 
     if echo "$RESPONSE" | grep -q '"error"'; then
         ERROR=$(echo "$RESPONSE" | jq -r '.error.message // "API error"' 2>/dev/null || echo "API call failed")
-        log_check "⚠️ API Error (non-blocking)" "$ERROR"
-        exit 0
+        ERROR_MSG="❌ ADVISOR API FAILED
+$ERROR
+
+Cannot complete AI review. Task completion blocked."
+        echo "$ERROR_MSG" >&2
+        log_check "🔴 API Error" "$ERROR_MSG"
+        exit 2
     elif echo "$RESPONSE" | grep -q '"content"'; then
         ADVISOR_RESPONSE=$(echo "$RESPONSE" | jq -r '.content[0].text // empty' 2>/dev/null)
         if [ -n "$ADVISOR_RESPONSE" ]; then
@@ -116,8 +123,13 @@ if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
             exit 0
         fi
     else
-        log_check "⚠️ API Response (non-blocking)" "Unexpected response format"
-        exit 0
+        ERROR_MSG="❌ ADVISOR API FAILED
+Unexpected response format from Anthropic API.
+
+Cannot complete AI review. Task completion blocked."
+        echo "$ERROR_MSG" >&2
+        log_check "🔴 API Response Failed" "$ERROR_MSG"
+        exit 2
     fi
 else
     log_check "⏭️ AI Review Skipped" "ANTHROPIC_API_KEY_ADVISOR not set"

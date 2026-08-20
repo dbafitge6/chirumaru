@@ -326,3 +326,27 @@ index 4f2c891..8d3e721 100
 
 ---
 
+# Advisor Check: 2026-08-20T05:33:15Z
+**Status**: 🔴 Unpushed Commits
+**Error**: ❌ UNPUSHED COMMITS detected:
+8e7ba87 docs: log advisor check test results (2026-08-20)
+
+Run: git push github main
+
+---
+
+# Advisor Check: 2026-08-20T05:33:21Z
+**Status**: ⏭️ AI Review Skipped
+**Error**: ANTHROPIC_API_KEY_ADVISOR not set
+
+---
+
+# Advisor Check: 2026-08-20T05:33:29Z
+**Status**: 🔴 API Error
+**Error**: ❌ ADVISOR API FAILED
+model: invalid-model-xyz
+
+Cannot complete AI review. Task completion blocked.
+
+---
+
