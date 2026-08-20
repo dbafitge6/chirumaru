@@ -107,9 +107,9 @@ fi
 # ============================================================================
 
 if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
-    # Gather actual git diff and log
-    GIT_DIFF=$(git diff HEAD~3 HEAD 2>/dev/null || echo "No recent changes")
-    GIT_LOG=$(git log -5 --stat 2>/dev/null || echo "No git log available")
+    # Gather actual git diff and log (review only the immediate previous commit)
+    GIT_DIFF=$(git diff HEAD~1 HEAD 2>/dev/null || echo "No recent changes")
+    GIT_LOG=$(git log -1 --stat 2>/dev/null || echo "No git log available")
 
     # Use a test model ID if ADVISOR_TEST_MODEL is set (for testing API error handling)
     TEST_MODEL="${ADVISOR_TEST_MODEL:-claude-sonnet-4-6}"
@@ -120,13 +120,13 @@ Review the following actual git changes in this repository.
 This is real git diff and git log output - do NOT imagine or fabricate files/changes.
 Base your review ONLY on what is shown below.
 
-RECENT GIT LOG (5 commits):
+RECENT GIT LOG:
 EOF
 )
     PROMPT="$PROMPT
 $GIT_LOG
 
-RECENT GIT DIFF (last 3 commits):
+RECENT GIT DIFF:
 $GIT_DIFF
 
 Please review for:
@@ -136,7 +136,15 @@ Please review for:
 4. Documentation updates
 5. Obvious bugs or issues
 
-Be concise. Reference actual changed files from the diff above."
+Be concise. Reference actual changed files from the diff above.
+
+IMPORTANT: At the end of your review, add a single line with ONLY:
+VERDICT: PASS  (if code is acceptable to merge)
+or
+VERDICT: BLOCK  (only if there are functional bugs, security issues, or clearly incomplete work)
+
+Minor style suggestions, log improvements, or best-practice recommendations = PASS
+Major correctness issues or security concerns = BLOCK"
 
     # Build request using jq for safe JSON encoding
     REQUEST_BODY=$(jq -n \
@@ -173,11 +181,12 @@ Cannot complete AI review. Task completion blocked."
         if [ -n "$ADVISOR_RESPONSE" ]; then
             log_check "✅ Advisor Review" "" "$ADVISOR_RESPONSE"
 
-            # If advisor detected issues, block with exit 2
-            if echo "$ADVISOR_RESPONSE" | grep -qi "REVIEW NEEDED\|concern\|warning\|issue\|bug\|error"; then
-                echo "⚠️ Advisor detected issues. Review logs/advisor_checks.md" >&2
+            # Check explicit VERDICT line only (case-insensitive, at end of response)
+            if echo "$ADVISOR_RESPONSE" | grep -iq "^VERDICT: BLOCK"; then
+                echo "🔴 Advisor: BLOCK verdict. Review logs/advisor_checks.md" >&2
                 exit 2
             fi
+            # VERDICT: PASS or missing verdict (default to pass)
             exit 0
         else
             log_check "✅ Advisor Check Completed" "" "Review processed successfully"
