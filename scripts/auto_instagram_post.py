@@ -370,6 +370,7 @@ def generate_slides(hook_text, shops):
     slides.append(slide1)
 
     # 【2〜4枚目 店舗】
+    shop_total = len(shops)
     for i, shop in enumerate(shops):
         slide = Image.new("RGB", (1080, 1920), "#FBF1EA")
         draw = ImageDraw.Draw(slide)
@@ -379,20 +380,30 @@ def generate_slides(hook_text, shops):
         slide.paste(logo_mono, (55, 55), logo_mono)
 
         # タグライン（左揃え、x=285）
-        draw_text_with_wrapping(draw, tagline, (285, 118), font_medium_42, "#B4B4B4", 500, align="left", font_name="medium")
+        draw_text_with_wrapping(draw, tagline, (285, 118), font_medium_42, "#9C9C9C", 500, align="left", font_name="medium")
+
+        # 進捗バッジ（右上、店舗の何軒目かを示す丸バッジ。3店舗を視覚的に区別する目的）
+        badge_center = (975, 150)
+        badge_radius = 68
+        draw.ellipse(
+            [badge_center[0] - badge_radius, badge_center[1] - badge_radius,
+             badge_center[0] + badge_radius, badge_center[1] + badge_radius],
+            fill="#5C4139"
+        )
+        draw.text(badge_center, f"{i + 1}/{shop_total}", font=font_medium_46, fill="#F7EDE5", anchor="mm")
 
         # 店名（y=700 が上端、幅900で中央x=540）- 積み上げ式計算開始
-        shop_name_height, _ = draw_text_with_wrapping(draw, shop['name'], (540, 700), font_bold_92, "#7A5A4C", 900, max_height=140, line_spacing=1.35, align="center", font_name="bold")
+        shop_name_height, _ = draw_text_with_wrapping(draw, shop['name'], (540, 700), font_bold_92, "#3D2418", 900, max_height=140, line_spacing=1.35, align="center", font_name="bold")
 
         # エリア（店名の下端 + 40px）
         area_y = 700 + shop_name_height + 40
-        area_height, _ = draw_text_with_wrapping(draw, shop['area'], (540, area_y), font_medium_48, "#C09A88", 900, max_height=100, line_spacing=1.35, align="center", font_name="medium")
+        area_height, _ = draw_text_with_wrapping(draw, shop['area'], (540, area_y), font_medium_48, "#8A6250", 900, max_height=100, line_spacing=1.35, align="center", font_name="medium")
 
         # 一言（エリアの下端 + 90px、幅840で中央x=540）
         # 一言が空の場合は描画をスキップ
         if shop['desc']:
             desc_y = area_y + area_height + 90
-            draw_text_with_wrapping(draw, shop['desc'], (540, desc_y), font_medium_52, "#8A6A5C", 840, max_height=400, line_spacing=1.6, align="center", font_name="medium")
+            draw_text_with_wrapping(draw, shop['desc'], (540, desc_y), font_medium_52, "#5C4139", 840, max_height=400, line_spacing=1.6, align="center", font_name="medium")
 
         slides.append(slide)
 
@@ -492,25 +503,26 @@ url = f"https://api.airtable.com/v0/{BASE_ID}/{TABLE_NAME}"
 headers = {"Authorization": f"Bearer {AIRTABLE_TOKEN}"}
 
 # シーンと対応するキャプション（状況系）
+# 問いかけ型・問題提起型のフックに統一(スキップ率改善のため2026-08見直し)
 SITUATION_SCENES = {
-    '日曜営業': '日曜も開いてる新潟のカフェ、3軒',
-    '夜まで営業': '夕方からでも間に合うカフェ',
-    'ランチあり': 'ちゃんとごはんが食べられるカフェ',
-    'テイクアウト可': '持ち帰りできるカフェ'
+    '日曜営業': '日曜、開いてる店ある?',
+    '夜まで営業': '夕方から、もう間に合わない?',
+    'ランチあり': 'カフェでも、お腹満たせる?',
+    'テイクアウト可': '今日、お店で座る時間ない?'
 }
 
 # 名物カテゴリと対応するフック文
 SPECIALTY_CAPTIONS = {
-    'かき氷': '新潟のかき氷、まだ間に合う',
-    'プリン': 'プリンが本気の店、あります',
-    'チーズケーキ': 'チーズケーキで選ぶなら',
-    'パンケーキ': '休日の朝はパンケーキ',
-    'ドーナツ': 'ドーナツ目当てで行きたい',
-    'クレープ': 'クレープが主役の店',
-    'ハンバーガー': '新潟のバーガー、侮れない',
-    'パン': 'パン目当てのドライブ',
-    'パスタ': 'カフェのパスタが本格的',
-    'ケーキ': 'ケーキが名物のカフェ'
+    'かき氷': 'かき氷、もう終わったと思ってた?',
+    'プリン': '本気のプリン、まだ知らない?',
+    'チーズケーキ': 'チーズケーキ、どこで迷ってる?',
+    'パンケーキ': '休日の朝は、パンケーキ派?',
+    'ドーナツ': 'ドーナツ迷子、終わりにしよう',
+    'クレープ': 'クレープだけで選んでみない?',
+    'ハンバーガー': '新潟のバーガー、まだ侮ってる?',
+    'パン': 'パン目当てで、ドライブしない?',
+    'パスタ': 'カフェのパスタ、まだ知らない?',
+    'ケーキ': 'ケーキ迷子、今日で終わり'
 }
 
 SCENE_CAPTIONS = {**SITUATION_SCENES, **{k: v for k, v in SPECIALTY_CAPTIONS.items()}}
