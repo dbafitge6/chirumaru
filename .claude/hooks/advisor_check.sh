@@ -25,20 +25,16 @@ if [ -f "$LOG_FILE" ]; then
 
     if [ "$FILE_SIZE" -gt "$LOG_MAX_SIZE" ]; then
         ARCHIVE="$LOGS_DIR/advisor_checks.archive.$(date -u +"%Y%m%d_%H%M%S").md"
-        # Atomic rotation: create new log first, then move old to archive
-        touch "$ARCHIVE"
         mv "$LOG_FILE" "$ARCHIVE" || exit 2
 
-        # Clean up old archives, keep only the last N
-        # Use find + while read to safely handle filenames with spaces/newlines
-        ARCHIVE_COUNT=0
-        find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -print0 2>/dev/null | \
-            xargs -0 ls -1t 2>/dev/null | while IFS= read -r archive_file; do
-                ARCHIVE_COUNT=$((ARCHIVE_COUNT + 1))
-                if [ "$ARCHIVE_COUNT" -gt "$ARCHIVE_RETENTION" ]; then
-                    rm -f "$archive_file"
-                fi
-            done
+        # Clean up old archives, keep only the last N (sorted by name due to timestamp)
+        # Count archives and delete oldest if exceeding retention limit
+        ARCHIVE_COUNT=$(find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -type f 2>/dev/null | wc -l)
+        if [ "$ARCHIVE_COUNT" -gt "$ARCHIVE_RETENTION" ]; then
+            TO_DELETE=$((ARCHIVE_COUNT - ARCHIVE_RETENTION))
+            find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -type f -print0 2>/dev/null | \
+                sort -z | head -z -n "$TO_DELETE" | xargs -0 rm -f 2>/dev/null
+        fi
     fi
 fi
 
