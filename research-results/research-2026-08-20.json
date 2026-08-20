@@ -1,0 +1,89 @@
+{
+  "timestamp": "2026-08-20T06:05:38.642038",
+  "timezone": "Asia/Tokyo",
+  "results": [
+    {
+      "type": "ga4_analytics",
+      "period": "last_7_days",
+      "rows": [
+        {
+          "date": "20260815",
+          "sessions": "8",
+          "active_users": "4",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260817",
+          "sessions": "7",
+          "active_users": "3",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260820",
+          "sessions": "7",
+          "active_users": "2",
+          "engaged_sessions": "1"
+        },
+        {
+          "date": "20260818",
+          "sessions": "6",
+          "active_users": "4",
+          "engaged_sessions": "4"
+        },
+        {
+          "date": "20260814",
+          "sessions": "5",
+          "active_users": "4",
+          "engaged_sessions": "2"
+        },
+        {
+          "date": "20260819",
+          "sessions": "5",
+          "active_users": "3",
+          "engaged_sessions": "1"
+        },
+        {
+          "date": "20260816",
+          "sessions": "2",
+          "active_users": "2",
+          "engaged_sessions": "1"
+        }
+      ]
+    },
+    {
+      "type": "new_shops",
+      "count": 0,
+      "shops": []
+    },
+    {
+      "type": "analysis",
+      "suggestions": [
+        {
+          "title": "Critical engagement drop - Low engaged session ratio",
+          "problem": "Engagement rate is critically low: only 48% of sessions result in engaged interactions (43 engaged sessions out of 40 total sessions). Aug 20 shows particularly poor performance with 14% engagement rate (1 of 7 sessions).",
+          "root_cause": "Website content may not be compelling enough to retain visitor attention, or the user experience creates friction (slow load times, unclear navigation, poor mobile optimization). Users are landing on the site but not taking desired actions (browsing bakeries, reading reviews, clicking through to details).",
+          "suggestion": "Conduct a UX audit focusing on: (1) Landing page clarity - ensure the value proposition of ちるまる is immediately obvious with high-quality bakery images above the fold, (2) Reduce friction - implement sticky navigation with prominent search/filter options, (3) Add engagement triggers like 'Featured Bakery Today', 'New Reviews', or 'Trending Near You' sections that encourage interaction within first 10 seconds of visit.",
+          "expected_impact": "Increase engaged session ratio from 48% to 65%+ by reducing bounce rate and encouraging deeper exploration. Target: 30+ engaged sessions within 7 days.",
+          "implementation_note": "Add tracking event: `gtag('event', 'engagement_milestone', {'type': 'bakery_view', 'depth': 'details'});` to measure when users move beyond initial landing. A/B test homepage layouts with heatmap analysis to identify where users disengage."
+        },
+        {
+          "title": "High session volatility with declining user base",
+          "problem": "Sessions fluctuate significantly (2-8 per day) with no clear pattern, and active user count remains very low (2-4 per day). Aug 16 shows a dramatic drop to 2 sessions, and Aug 20 shows declining active users despite 7 sessions, suggesting single-visit traffic with low retention.",
+          "root_cause": "No consistent traffic driver (likely minimal or sporadic social media/marketing activity). Users are not returning - indicating either: (1) lack of new content/updates to drive repeat visits, (2) no email or push notification strategy to re-engage users, or (3) limited awareness of ちるまる in target market.",
+          "suggestion": "Implement a content calendar with scheduled bakery updates/reviews (minimum 3x per week) and establish a weekly email digest: 'This Week's New Bakeries' or 'Top-Rated Cafes Near You'. Launch an Instagram content series (Stories, Reels) featuring 'Bakery of the Week' with direct links to ちるまる. Add push notification capability for app/web for time-sensitive updates (e.g., 'New reviews posted in your area').",
+          "expected_impact": "Stabilize sessions around 15-20 per day with repeat visitor rate increasing from current ~10% to 30%+. Create predictable traffic spikes on content publish days.",
+          "implementation_note": "Set up automated email: `sendWeeklyDigest(userEmail, newBakeries, topRated, nearbyNew);` Schedule Instagram posts in advance using Buffer/Meta Business Suite. Implement web push: `if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').then(reg => { requestNotificationPermission(); }); }`"
+        },
+        {
+          "title": "User acquisition stagnation - Extremely low active user base",
+          "problem": "Active user count averages only 3.1 per day across the week, with a maximum of 4. Over 7 days, only ~22 unique active users engaging with the site. This indicates virtually no user acquisition momentum.",
+          "root_cause": "Likely insufficient marketing visibility - ちるまる may not be discoverable through search, lacks strong social media presence (Instagram insights unavailable suggests minimal activity), and has no apparent referral/partnership strategy with bakeries or food blogs.",
+          "suggestion": "Launch a 3-pronged acquisition strategy: (1) SEO optimization - target long-tail keywords like '[city name] + おすすめカフェ' and '[region] + ベーカリー' with location-specific landing pages, (2) Partner with 50+ bakeries/cafes for directory listing with incentive (e.g., featured listing if they link to ちるまる), (3) Start a structured Instagram content plan with reels showcasing bakery discoveries, using relevant hashtags (#カフェ巡り #パン屋さん #ベーカリー #cafe検索) and location tags to drive discovery.",
+          "expected_impact": "Increase active users from 3/day to 15-20/day within 4 weeks. Build foundation for sustainable growth through organic search and referral traffic.",
+          "implementation_note": "Create location pages: `/bakeries/[city]/` with schema markup: `{'@context':'schema.org','@type':'LocalBusiness','geo':{'@type':'GeoShape','addressRegion':'[city]'},...}` Establish bakery partnership: create shareable badge code `<a href='ちるまる.jp?partner=bakery_id' target='_blank'><img src='/badge.png'/></a>` Track referral source: `utm_source=bakery_partner&utm_medium=referral&utm_campaign=[bakery_name]`"
+        }
+      ],
+      "timestamp": "2026-08-20T06:05:38.642025"
+    }
+  ]
+}
