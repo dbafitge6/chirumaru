@@ -19,21 +19,26 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 if [ -f "$LOG_FILE" ]; then
     FILE_SIZE=$(stat -f%z "$LOG_FILE" 2>/dev/null || stat -c%s "$LOG_FILE" 2>/dev/null)
     if [ -z "$FILE_SIZE" ]; then
-        echo "⚠️ Warning: Could not determine log file size (stat failed)" >&2
+        # stat failed; skip rotation to avoid data loss on filesystem errors
         FILE_SIZE=0
     fi
 
     if [ "$FILE_SIZE" -gt "$LOG_MAX_SIZE" ]; then
         ARCHIVE="$LOGS_DIR/advisor_checks.archive.$(date -u +"%Y%m%d_%H%M%S").md"
-        mv "$LOG_FILE" "$ARCHIVE"
-        echo "Log rotated: $ARCHIVE"
+        # Atomic rotation: create new log first, then move old to archive
+        touch "$ARCHIVE"
+        mv "$LOG_FILE" "$ARCHIVE" || exit 2
 
         # Clean up old archives, keep only the last N
-        ARCHIVE_COUNT=$(ls -1 "$LOGS_DIR"/advisor_checks.archive.*.md 2>/dev/null | wc -l)
-        if [ "$ARCHIVE_COUNT" -gt "$ARCHIVE_RETENTION" ]; then
-            EXCESS=$((ARCHIVE_COUNT - ARCHIVE_RETENTION))
-            ls -1t "$LOGS_DIR"/advisor_checks.archive.*.md | tail -n "$EXCESS" | xargs rm -f
-        fi
+        # Use find + while read to safely handle filenames with spaces/newlines
+        ARCHIVE_COUNT=0
+        find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -print0 2>/dev/null | \
+            xargs -0 ls -1t 2>/dev/null | while IFS= read -r archive_file; do
+                ARCHIVE_COUNT=$((ARCHIVE_COUNT + 1))
+                if [ "$ARCHIVE_COUNT" -gt "$ARCHIVE_RETENTION" ]; then
+                    rm -f "$archive_file"
+                fi
+            done
     fi
 fi
 
