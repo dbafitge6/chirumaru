@@ -79,18 +79,51 @@ fi
 # ============================================================================
 
 if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
-    # Use a test model ID if ADVISOR_TEST_MODE is set (for testing API error handling)
+    # Gather actual git diff and log
+    GIT_DIFF=$(git diff HEAD~3 HEAD 2>/dev/null || echo "No recent changes")
+    GIT_LOG=$(git log -5 --stat 2>/dev/null || echo "No git log available")
+
+    # Use a test model ID if ADVISOR_TEST_MODEL is set (for testing API error handling)
     TEST_MODEL="${ADVISOR_TEST_MODEL:-claude-sonnet-4-6}"
-    REQUEST_BODY="{
-  \"model\": \"$TEST_MODEL\",
-  \"max_tokens\": 500,
-  \"messages\": [
-    {
-      \"role\": \"user\",
-      \"content\": \"Review the recent work in this repository for code quality, uncommitted changes, test coverage, documentation, and obvious bugs. Be concise.\"
-    }
-  ]
-}"
+
+    # Build prompt with actual git data, using jq for safe JSON encoding
+    PROMPT=$(cat <<'EOF'
+Review the following actual git changes in this repository.
+This is real git diff and git log output - do NOT imagine or fabricate files/changes.
+Base your review ONLY on what is shown below.
+
+RECENT GIT LOG (5 commits):
+EOF
+)
+    PROMPT="$PROMPT
+$GIT_LOG
+
+RECENT GIT DIFF (last 3 commits):
+$GIT_DIFF
+
+Please review for:
+1. Code quality and correctness
+2. Uncommitted changes that should be committed
+3. Test coverage for new code
+4. Documentation updates
+5. Obvious bugs or issues
+
+Be concise. Reference actual changed files from the diff above."
+
+    # Build request using jq for safe JSON encoding
+    REQUEST_BODY=$(jq -n \
+        --arg model "$TEST_MODEL" \
+        --arg prompt "$PROMPT" \
+        '{
+            "model": $model,
+            "max_tokens": 600,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": $prompt
+                }
+            ]
+        }')
 
     RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
         -H "x-api-key: $ANTHROPIC_API_KEY_ADVISOR" \
