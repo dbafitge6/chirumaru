@@ -29,7 +29,7 @@ jobs:
 
       - name: Upload results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: memo-enrichment-logs
           path: logs/memo_enrichment_*.md
