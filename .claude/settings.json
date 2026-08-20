@@ -1,12 +1,4 @@
 {
-  "env": {
-    "X_API_KEY": "REDACTED",
-    "X_API_SECRET": "REDACTED",
-    "X_ACCESS_TOKEN": "REDACTED",
-    "X_ACCESS_TOKEN_SECRET": "REDACTED",
-    "WORDPRESS_USER": "REDACTED",
-    "WORDPRESS_PASSWORD": "REDACTED"
-  },
   "permissions": {
     "allow": [
       "Bash",
@@ -42,7 +34,7 @@
     }
   },
   "tui": "fullscreen",
-  "skipDangerousModePermissionPrompt": true,
+  "skipDangerousModePermissionPrompt": false,
   "theme": "dark",
   "enableAllProjectMcpServers": true,
   "hooks": {

@@ -10,6 +10,7 @@ npm-debug.log*
 *.key
 *.pem
 ga-service-account.json
+.claude/settings.json
 # Generated videos (but keep history)
 generated_videos/*.mp4
 generated_videos/*.mov
