@@ -16,7 +16,7 @@ BASE_ID = 'appyyoKM7RprQRht8'
 TABLE_ID = 'tblcOdcqCxzb7kX0e'
 LOGS_DIR = os.path.join(os.path.dirname(__file__), '..', 'logs')
 PROCESSED_FILE = os.path.join(LOGS_DIR, 'memo_enrichment_processed.json')
-MAX_BATCH_SIZE = 30
+MAX_BATCH_SIZE = 1  # DEBUG: Process only 1 shop to troubleshoot errors
 
 os.makedirs(LOGS_DIR, exist_ok=True)
 
@@ -150,7 +150,10 @@ Web検索結果:
                 print(f"Memo too long ({len(memo)} chars): {memo[:50]}", file=sys.stderr)
             return None
     except Exception as e:
+        import traceback
         print(f"Claude API error: {e}", file=sys.stderr)
+        print(f"Full traceback:\n{traceback.format_exc()}", file=sys.stderr)
+        print(f"Response object: {response if 'response' in locals() else 'No response'}", file=sys.stderr)
         return None
 
 def search_shop_info(shop_name: str) -> str:
