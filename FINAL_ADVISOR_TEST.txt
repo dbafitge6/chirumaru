@@ -1,3 +1,0 @@
-Final test file for advisor review.
-Advisor must mention this file name in its review.
-If it mentions fictional files, the test fails.

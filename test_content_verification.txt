@@ -1,2 +1,0 @@
-This file is to verify Advisor correctly reviews the actual changes.
-Advisor should mention this file and test_advisor_review.md in its review.
