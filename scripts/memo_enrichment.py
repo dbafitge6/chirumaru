@@ -100,6 +100,7 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
 
 def generate_memo(shop_name: str, area: str, menu_or_features: str, web_content: str) -> Optional[str]:
     """Generate a memo using Claude API"""
+    print(f"[DEBUG] generate_memo called for: {shop_name}")
     client = Anthropic()
 
     prompt = f"""以下の情報から、ちるまるInstagram投稿用の一言メモを生成してください。
@@ -151,9 +152,9 @@ Web検索結果:
             return None
     except Exception as e:
         import traceback
-        print(f"Claude API error: {e}", file=sys.stderr)
-        print(f"Full traceback:\n{traceback.format_exc()}", file=sys.stderr)
-        print(f"Response object: {response if 'response' in locals() else 'No response'}", file=sys.stderr)
+        error_msg = f"Claude API error: {e}\nFull traceback:\n{traceback.format_exc()}"
+        print(error_msg)  # stdout に出力（GitHub Actions で表示される）
+        print(error_msg, file=sys.stderr)
         return None
 
 def search_shop_info(shop_name: str) -> str:
