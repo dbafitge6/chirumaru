@@ -208,7 +208,7 @@ Start with [ and end with ], containing only valid JSON.
 
         message = client.messages.create(
             model="claude-haiku-4-5-20251001",
-            max_tokens=1000,
+            max_tokens=2000,
             messages=[
                 {"role": "user", "content": prompt}
             ]
