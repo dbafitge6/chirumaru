@@ -1,5 +1,63 @@
 {
+  "env": {
+    "X_API_KEY": "REDACTED",
+    "X_API_SECRET": "REDACTED",
+    "X_ACCESS_TOKEN": "REDACTED",
+    "X_ACCESS_TOKEN_SECRET": "REDACTED",
+    "WORDPRESS_USER": "REDACTED",
+    "WORDPRESS_PASSWORD": "REDACTED"
+  },
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Bash(flutter *)",
+      "Bash(python3 *)",
+      "Bash(pkill *)",
+      "Bash(xcrun *)",
+      "Bash(osascript *)",
+      "Bash(screencapture *)",
+      "Bash(open *)",
+      "Bash(curl *)",
+      "Bash(pip3 *)",
+      "Bash(swift *)",
+      "Bash(gh api *)",
+      "Bash(until *)",
+      "mcp__claude-in-chrome__*"
+    ],
+    "defaultMode": "default"
+  },
+  "model": "haiku",
+  "enabledPlugins": {
+    "postiz@claude-plugins-official": true,
+    "airtable@claude-plugins-official": true,
+    "canva@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "anthropic-agent-skills": {
+      "source": {
+        "source": "github",
+        "repo": "anthropics/skills"
+      }
+    }
+  },
+  "tui": "fullscreen",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
+  "enableAllProjectMcpServers": true,
   "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/pre-commit-settings-check.sh",
+            "timeout": 5,
+            "statusMessage": "Checking .claude/settings.json for uncommitted changes..."
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
