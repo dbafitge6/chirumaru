@@ -16,7 +16,7 @@ BASE_ID = 'appyyoKM7RprQRht8'
 TABLE_ID = 'tblcOdcqCxzb7kX0e'
 LOGS_DIR = os.path.join(os.path.dirname(__file__), '..', 'logs')
 PROCESSED_FILE = os.path.join(LOGS_DIR, 'memo_enrichment_processed.json')
-MAX_BATCH_SIZE = 1  # DEBUG: Process only 1 shop to troubleshoot errors
+MAX_BATCH_SIZE = 30  # Process up to 30 shops per run
 
 os.makedirs(LOGS_DIR, exist_ok=True)
 
