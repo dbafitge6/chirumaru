@@ -45,6 +45,7 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
     offset = None
 
     # Fetch all records with pagination
+    print("Fetching all records from Airtable...")
     while True:
         params = {'pageSize': 100}
         if offset:
@@ -59,17 +60,22 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
         if 'error' in data:
             raise RuntimeError(f"Airtable API error: {data['error']}")
 
-        all_records.extend(data.get('records', []))
+        batch = data.get('records', [])
+        all_records.extend(batch)
+        print(f"  Fetched {len(batch)} records (total: {len(all_records)})")
         offset = data.get('offset')
         if not offset:
             break
 
-    # Filter in Python: memo < 20 chars OR tags <= 1
+    # Load previously processed record IDs
     processed = load_processed_records()
+    print(f"Previously processed: {len(processed)} records")
+
     result = []
 
     for record in all_records:
-        if record['id'] in processed:
+        record_id = record['id']
+        if record_id in processed:
             continue
 
         fields = record.get('fields', {})
@@ -77,16 +83,19 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
         memo = fields.get('一言メモ', '').strip()
         tags = fields.get('タグ', '')
 
-        # Check if memo is short or tags are insufficient
-        meets_criteria = len(memo) < 20 or (isinstance(tags, list) and len(tags) <= 1) or (isinstance(tags, str) and len(tags.split(',')) <= 1)
+        # Check if memo is short (< 20 chars) or empty
+        # Tags filtering is skipped for now since memo is primary criterion
+        memo_is_short = len(memo) < 20
 
-        if meets_criteria:
-            print(f"DEBUG: {shop_name} | memo_len={len(memo)} | memo='{memo}' | tags={tags}")
+        if memo_is_short:
+            print(f"CANDIDATE: {shop_name:30s} | ID: {record_id} | memo_len={len(memo):2d} | memo='{memo}'")
             result.append(record)
 
         if len(result) >= MAX_BATCH_SIZE:
+            print(f"Reached batch size limit ({MAX_BATCH_SIZE})")
             break
 
+    print(f"\nTotal candidates for enrichment: {len(result)}")
     return result
 
 def generate_memo(shop_name: str, area: str, menu_or_features: str, web_content: str) -> Optional[str]:
@@ -125,13 +134,20 @@ Web検索結果:
         )
 
         # Extract text blocks (filter out thinking blocks)
-        text_blocks = [block.text for block in response.content if block.type == "text"]
+        # ThinkingBlock objects don't have .text attribute, so filter by type
+        text_blocks = []
+        for block in response.content:
+            if hasattr(block, 'type') and block.type == "text" and hasattr(block, 'text'):
+                text_blocks.append(block.text)
+
         memo = "".join(text_blocks).strip()
 
-        # Validate length
+        # Validate length and non-empty
         if len(memo) <= 35 and memo:
             return memo
         else:
+            if memo:
+                print(f"Memo too long ({len(memo)} chars): {memo[:50]}", file=sys.stderr)
             return None
     except Exception as e:
         print(f"Claude API error: {e}", file=sys.stderr)
@@ -189,6 +205,10 @@ def main():
     # Fetch shops needing enrichment
     shops = get_shops_needing_enrichment(airtable_token)
 
+    print(f"\n{'='*80}")
+    print(f"Starting enrichment for {len(shops)} shops")
+    print(f"{'='*80}\n")
+
     results = {
         'timestamp': datetime.now().isoformat(),
         'total_processed': len(shops),
@@ -199,7 +219,7 @@ def main():
 
     processed_ids = load_processed_records()
 
-    for shop in shops:
+    for idx, shop in enumerate(shops, 1):
         record_id = shop['id']
         fields = shop.get('fields', {})
 
@@ -208,13 +228,15 @@ def main():
         menu = fields.get('Menu/Features', '')
         website_url = fields.get('Website URL', '')
 
-        print(f"Processing: {shop_name}")
+        print(f"\n[{idx}/{len(shops)}] Processing: {shop_name}")
+        print(f"  Record ID: {record_id}")
 
         # Generate memo candidate
         web_content = search_shop_info(shop_name)
         memo_candidate = generate_memo(shop_name, area, menu, web_content)
 
         if not memo_candidate:
+            print(f"  ❌ ERROR: Failed to generate memo")
             results['errors'].append({
                 'record_id': record_id,
                 'shop_name': shop_name,
@@ -223,10 +245,13 @@ def main():
             processed_ids.add(record_id)
             continue
 
+        print(f"  Generated: '{memo_candidate}' ({len(memo_candidate)} chars)")
+
         # Verify memo
         verification = verify_memo_with_fact_check(shop_name, memo_candidate, website_url or '')
 
         if verification['status'] == 'VERIFIED':
+            print(f"  ✅ VERIFIED")
             results['verified'].append({
                 'record_id': record_id,
                 'shop_name': shop_name,
@@ -235,6 +260,7 @@ def main():
                 'verification': verification['result']
             })
         else:
+            print(f"  ⚠️  UNVERIFIED: {verification.get('reason', verification.get('error', 'Unknown'))}")
             results['unverified'].append({
                 'record_id': record_id,
                 'shop_name': shop_name,
@@ -244,8 +270,10 @@ def main():
 
         processed_ids.add(record_id)
 
-    # Save processed IDs
+    # Save processed IDs (BEFORE writing logs)
+    print(f"\n\nSaving {len(processed_ids)} processed record IDs...")
     save_processed_records(processed_ids)
+    print(f"✅ Saved to {PROCESSED_FILE}")
 
     # Write results to markdown log
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -257,14 +285,15 @@ def main():
         f.write(f'**Total Processed**: {results["total_processed"]}\n')
         f.write(f'**Verified**: {len(results["verified"])}\n')
         f.write(f'**Unverified**: {len(results["unverified"])}\n')
-        f.write(f'**Errors**: {len(results["errors"])}\n\n')
+        f.write(f'**Errors**: {len(results["errors"])}\n')
+        f.write(f'**Processed IDs File**: {PROCESSED_FILE}\n\n')
 
         if results['verified']:
             f.write('## Verified Memos (Ready for Airtable)\n\n')
             for item in results['verified']:
                 f.write(f'### {item["shop_name"]}\n')
                 f.write(f'- **Record ID**: {item["record_id"]}\n')
-                f.write(f'- **Memo**: {item["memo_candidate"]}\n')
+                f.write(f'- **Memo**: `{item["memo_candidate"]}` ({len(item["memo_candidate"])} chars)\n')
                 f.write(f'- **Source**: {item["source_url"]}\n')
                 f.write(f'- **Verification**: {item["verification"]}\n\n')
 
@@ -273,25 +302,28 @@ def main():
             for item in results['unverified']:
                 f.write(f'### {item["shop_name"]}\n')
                 f.write(f'- **Record ID**: {item["record_id"]}\n')
-                f.write(f'- **Memo Candidate**: {item["memo_candidate"]}\n')
+                f.write(f'- **Memo Candidate**: `{item["memo_candidate"]}` ({len(item["memo_candidate"])} chars)\n')
                 f.write(f'- **Reason**: {item["reason"]}\n\n')
 
         if results['errors']:
             f.write('## Errors\n\n')
             for item in results['errors']:
-                f.write(f'- {item["shop_name"]}: {item["error"]}\n')
+                f.write(f'- **{item["shop_name"]}** (ID: {item["record_id"]}): {item["error"]}\n')
 
     # Save summary for GitHub Actions
     summary_file = os.path.join(LOGS_DIR, 'memo_enrichment_summary.json')
     with open(summary_file, 'w', encoding='utf-8') as f:
         json.dump({
+            'timestamp': results['timestamp'],
             'total_processed': results['total_processed'],
             'verified_count': len(results['verified']),
             'unverified_count': len(results['unverified']),
-            'error_count': len(results['errors'])
+            'error_count': len(results['errors']),
+            'total_processed_ids': len(processed_ids)
         }, f, ensure_ascii=False, indent=2)
 
-    print(f"Results written to {log_file}")
+    print(f"\n📄 Results written to: {log_file}")
+    print(f"📊 Summary: {summary_file}")
 
 if __name__ == '__main__':
     main()
