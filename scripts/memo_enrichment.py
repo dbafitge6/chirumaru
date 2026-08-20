@@ -82,10 +82,15 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
         shop_name = fields.get('Store Name', 'Unknown')
         memo = fields.get('一言メモ', '').strip()
         tags = fields.get('タグ', '')
+        website_url = fields.get('Website URL', '').strip()
 
         # Check if memo is short (< 20 chars) or empty
         # Tags filtering is skipped for now since memo is primary criterion
         memo_is_short = len(memo) < 20
+
+        if not website_url:
+            print(f"SKIPPED (no URL): {shop_name:30s} | ID: {record_id}")
+            continue
 
         if memo_is_short:
             print(f"CANDIDATE: {shop_name:30s} | ID: {record_id} | memo_len={len(memo):2d} | memo='{memo}'")
@@ -198,17 +203,34 @@ def verify_memo_with_fact_check(shop_name: str, memo: str, url: str) -> Dict[str
         )
 
         if result.returncode != 0:
-            return {'status': 'ERROR', 'error': result.stderr}
+            return {
+                'status': 'ERROR',
+                'error': result.stderr,
+                'reason': f"Fact-check script error: {result.stderr[:100]}"
+            }
 
         output = json.loads(result.stdout)
 
-        # Extract verification result
+        # Extract verification result with consistent structure
         if output.get('verified'):
-            return {'status': 'VERIFIED', 'result': output['verified'][0] if output['verified'] else None}
+            fact_result = output['verified'][0] if output['verified'] else None
+            return {
+                'status': 'VERIFIED',
+                'result': fact_result,
+                'reason': f"Verified ({fact_result.get('match_count', 0)}/{fact_result.get('total_keywords', 0)} keywords)" if fact_result else "Verified"
+            }
         elif output.get('unverified'):
-            return {'status': 'UNVERIFIED', 'result': output['unverified'][0] if output['unverified'] else None}
+            fact_result = output['unverified'][0] if output['unverified'] else None
+            return {
+                'status': 'UNVERIFIED',
+                'result': fact_result,
+                'reason': f"Unverified - {fact_result.get('status', 'unknown')} ({fact_result.get('match_count', 0)}/{fact_result.get('total_keywords', 0)} keywords)" if fact_result else "Unverified"
+            }
         else:
-            return {'status': 'SKIPPED', 'reason': 'No verification data'}
+            return {
+                'status': 'SKIPPED',
+                'reason': 'No verification data'
+            }
     finally:
         os.unlink(temp_file)
 
@@ -275,12 +297,13 @@ def main():
                 'verification': verification['result']
             })
         else:
-            print(f"  ⚠️  UNVERIFIED: {verification.get('reason', verification.get('error', 'Unknown'))}")
+            reason = verification.get('reason', 'Unknown')
+            print(f"  ⚠️  UNVERIFIED: {reason}")
             results['unverified'].append({
                 'record_id': record_id,
                 'shop_name': shop_name,
                 'memo_candidate': memo_candidate,
-                'reason': verification.get('reason', verification.get('error', 'Unknown'))
+                'reason': reason
             })
 
         processed_ids.add(record_id)
