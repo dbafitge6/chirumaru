@@ -61,10 +61,6 @@ log_check() {
         echo "---"
         echo ""
     } >> "$LOG_FILE"
-
-    # Commit the log file to avoid git status detecting it as uncommitted
-    git add "$LOG_FILE" 2>/dev/null
-    git commit -m "chore: log advisor check" --no-verify 2>/dev/null || true
 }
 
 # ============================================================================
