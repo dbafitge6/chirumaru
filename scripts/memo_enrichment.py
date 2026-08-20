@@ -73,11 +73,15 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
             continue
 
         fields = record.get('fields', {})
+        shop_name = fields.get('Store Name', 'Unknown')
         memo = fields.get('一言メモ', '').strip()
         tags = fields.get('タグ', '')
 
         # Check if memo is short or tags are insufficient
-        if len(memo) < 20 or (isinstance(tags, list) and len(tags) <= 1) or (isinstance(tags, str) and len(tags.split(',')) <= 1):
+        meets_criteria = len(memo) < 20 or (isinstance(tags, list) and len(tags) <= 1) or (isinstance(tags, str) and len(tags.split(',')) <= 1)
+
+        if meets_criteria:
+            print(f"DEBUG: {shop_name} | memo_len={len(memo)} | memo='{memo}' | tags={tags}")
             result.append(record)
 
         if len(result) >= MAX_BATCH_SIZE:

@@ -32,7 +32,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: memo-enrichment-logs
-          path: logs/memo_enrichment_*.md
+          path: |
+            logs/memo_enrichment_*.md
+            logs/memo_enrichment_*.json
+            logs/memo_enrichment_processed.json
           retention-days: 30
 
       - name: Report Summary
