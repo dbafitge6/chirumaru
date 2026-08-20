@@ -1,22 +1,18 @@
 #!/bin/bash
 
-# advisor_check.sh - Stop hook that verifies work quality before task completion
-# Calls the Anthropic API to perform a code/work quality review
-# Logs results to logs/advisor_checks.md
+# advisor_check.sh - Stop hook for work quality verification
+# 1. Machine checks: git push status, Vercel deployment status
+# 2. AI review: Anthropic API for code quality
 
-set -e
+set +e
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 LOGS_DIR="$REPO_ROOT/logs"
 LOG_FILE="$LOGS_DIR/advisor_checks.md"
 
-# Ensure logs directory exists
 mkdir -p "$LOGS_DIR"
-
-# Get timestamp
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# Function to log advisor check result
 log_check() {
     local status="$1"
     local error_msg="${2:-}"
@@ -39,12 +35,50 @@ log_check() {
     } >> "$LOG_FILE"
 }
 
-# Try to get recent git changes for context
-GIT_LOG=$(git log -1 --pretty=format:"%H %s" 2>/dev/null || echo "")
+# ============================================================================
+# PHASE 1: MACHINE CHECKS
+# ============================================================================
 
-# Call Anthropic API for code review if API key is set
+# Check 1: Unpushed commits
+git fetch github >/dev/null 2>&1
+UNPUSHED=$(git log github/main..HEAD --oneline 2>/dev/null || echo "")
+if [ -n "$UNPUSHED" ]; then
+    ERROR_MSG="❌ UNPUSHED COMMITS detected:
+$UNPUSHED
+
+Run: git push github main"
+    echo "$ERROR_MSG" >&2
+    log_check "🔴 Unpushed Commits" "$ERROR_MSG"
+    exit 2
+fi
+
+# Check 2: Vercel deployment status
+if [ -n "$VERCEL_TOKEN" ] && [ -n "$VERCEL_PROJECT_ID" ]; then
+    VERCEL_RESPONSE=$(curl -s "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&limit=1" \
+        -H "Authorization: Bearer $VERCEL_TOKEN")
+
+    CURRENT_SHA=$(git rev-parse HEAD 2>/dev/null || echo "")
+    DEPLOYED_SHA=$(echo "$VERCEL_RESPONSE" | jq -r '.deployments[0].meta.githubCommitSha // "UNKNOWN"' 2>/dev/null)
+    READY_STATE=$(echo "$VERCEL_RESPONSE" | jq -r '.deployments[0].readyState // "UNKNOWN"' 2>/dev/null)
+
+    if [ "$DEPLOYED_SHA" != "$CURRENT_SHA" ] || [ "$READY_STATE" != "READY" ]; then
+        ERROR_MSG="❌ VERCEL DEPLOYMENT NOT READY
+Current commit: $CURRENT_SHA
+Deployed commit: $DEPLOYED_SHA
+Deployment state: $READY_STATE
+
+Wait for Vercel to finish deployment or push if needed."
+        echo "$ERROR_MSG" >&2
+        log_check "🔴 Vercel Not Ready" "$ERROR_MSG"
+        exit 2
+    fi
+fi
+
+# ============================================================================
+# PHASE 2: AI REVIEW (only if machine checks pass)
+# ============================================================================
+
 if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
-    # Prepare request for Anthropic API
     REQUEST_BODY='{
   "model": "claude-sonnet-4-6",
   "max_tokens": 500,
@@ -56,36 +90,38 @@ if [ -n "$ANTHROPIC_API_KEY_ADVISOR" ]; then
   ]
 }'
 
-    # Make API call
     RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
         -H "x-api-key: $ANTHROPIC_API_KEY_ADVISOR" \
         -H "anthropic-version: 2023-06-01" \
         -H "content-type: application/json" \
         -d "$REQUEST_BODY" 2>&1)
 
-    # Parse response for errors or success
     if echo "$RESPONSE" | grep -q '"error"'; then
-        # Extract error message
         ERROR=$(echo "$RESPONSE" | jq -r '.error.message // "API error"' 2>/dev/null || echo "API call failed")
-        log_check "❌ API Error" "$ERROR"
+        log_check "⚠️ API Error (non-blocking)" "$ERROR"
         exit 0
     elif echo "$RESPONSE" | grep -q '"content"'; then
-        # Success - extract response text
         ADVISOR_RESPONSE=$(echo "$RESPONSE" | jq -r '.content[0].text // empty' 2>/dev/null)
         if [ -n "$ADVISOR_RESPONSE" ]; then
             log_check "✅ Advisor Review" "" "$ADVISOR_RESPONSE"
+
+            # If advisor detected issues, block with exit 2
+            if echo "$ADVISOR_RESPONSE" | grep -qi "REVIEW NEEDED\|concern\|warning\|issue\|bug\|error"; then
+                echo "⚠️ Advisor detected issues. Review logs/advisor_checks.md" >&2
+                exit 2
+            fi
+            exit 0
         else
             log_check "✅ Advisor Check Completed" "" "Review processed successfully"
+            exit 0
         fi
-        exit 0
     else
-        # Unknown response format
-        log_check "❌ API Response" "Unexpected response format"
+        log_check "⚠️ API Response (non-blocking)" "Unexpected response format"
         exit 0
     fi
 else
-    # No API key - just log that check was skipped
-    log_check "⏭️ Skipped" "ANTHROPIC_API_KEY_ADVISOR not set"
+    log_check "⏭️ AI Review Skipped" "ANTHROPIC_API_KEY_ADVISOR not set"
+    exit 0
 fi
 
 exit 0
