@@ -853,3 +853,361 @@ Run: git push github main
 
 ---
 
+# Advisor Check: 2026-08-20T08:52:06Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### What's Actually Here
+
+This diff appends 376 lines of advisor review log entries to `logs/advisor_checks.md`. No functional code changes. The entries document reviews of `advisor_check.sh` rotation logic and related infrastructure.
+
+---
+
+### Observations
+
+**Log content quality is reasonable**
+The entries accurately summarize prior reviews, identify real bugs (subshell variable scope issue with `ARCHIVE_COUNT`, `head -z` portability on macOS, `wc -l` whitespace trimming), and the final entries correctly issue `VERDICT: PASS` for legitimate fixes.
+
+**Truncated entries**
+The `05:42:08Z` and `05:42:45Z` entries are cut off mid-sentence:
+- `05:42:08Z`: "The `touch` is harmless but the rationale in the commit" — ends abruptly
+- `05:42:45Z`: "Commit `aa2c2880` (`docs: remove redundant advisor check entry`) modifies `logs/advisor_checks.`" — ends abruptly
+
+These truncations suggest the advisor response was cut off, likely by a token limit. This is a log integrity issue — incomplete entries in an audit trail are misleading.
+
+**Unpushed commit flagged at 08:51:40Z**
+The final entry flags an unpushed commit (`46fccce test: add memo generation test batch`). This is a status entry, not a review, and it's appropriate to log. However, if that commit is still unpushed, it represents incomplete work.
+
+**Recursive meta-logging continues**
+The log is still logging reviews of its own review process. The structural concern about unbounded growth is noted repeatedly without resolution visible in this diff. Archive accumulation (`logs/advisor_checks.archive.*.md`) remains unaddressed here.
+
+**No functional code changed**
+This is purely log appending — no correctness or security concerns introduced directly.
+
+---
+
+### Summary
+
+The truncated log entries at `05:42:08Z` and `05:42:45Z` are the main concrete issue. The unpushed commit flagged in the final entry warrants attention but is outside this diff's scope.
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T08:58:23Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### What's Actually Here
+
+This diff appends 376 lines of advisor review log entries to `logs/advisor_checks.md`. No functional code changes are present — this is pure log/audit trail addition.
+
+---
+
+### Observations
+
+**1. The log entries themselves are coherent and useful**
+The advisor reviews document real issues with `advisor_check.sh` across multiple iterations (rotation logic bugs, VERDICT pattern fixes, `max_tokens` increase). The progression from identifying problems to confirming fixes is readable and follows a sensible audit trail pattern.
+
+**2. Truncated entries**
+Two entries are visibly cut off mid-sentence:
+- `05:41:22Z`: ends with `"— it's the actual change here; **`advisor_check.sh` has"`
+- `05:42:08Z`: ends with `"The comment 'create new log first' is misleading because no *new* log is created here; the next write to `$LOG_FILE` creates it implicitly. The `touch` is harmless but the rationale in the commit"`
+- `05:42:45Z`: ends with `"Commit `aa2c2880` (`docs: remove redundant advisor check entry`) modifies `logs/advisor_checks."`
+
+These truncations suggest the log capture mechanism is hitting a buffer or size limit mid-write. This is a data integrity concern for the audit log.
+
+**3. Summary table in `05:40:39Z` is malformed**
+The markdown table is incomplete — only a header row with no separator or data rows. Minor cosmetic issue.
+
+**4. Unpushed commit alert at `08:51:40Z`**
+The log records an unpushed commit (`46fccce test: add memo generation test batch`). This is the hook doing its job, but if that commit hasn't been pushed before this log entry is pushed, there may be ordering issues.
+
+**5. No functional code changes to review**
+The underlying `advisor_check.sh` changes being discussed are not present in this diff and were reviewed in prior cycles per the log.
+
+---
+
+### Summary
+
+This is a log-only append. The truncation issue is a real defect in log capture quality but doesn't affect system functionality. The entries that do conclude all end with `VERDICT: PASS`.
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T08:59:57Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### What's Actually Here
+
+This diff is purely additive log entries to `logs/advisor_checks.md`. No functional code is changed. The 376 lines added are advisor review records spanning `05:40:02Z` through `08:51:40Z` on 2026-08-20.
+
+---
+
+### Observations
+
+**1. Truncated log entries**
+
+Several entries are visibly cut off mid-sentence:
+- `05:41:22Z`: ends with `"**`advisor_check.sh` has`"
+- `05:42:08Z`: ends with `"the rationale in the commit"`
+- `05:42:45Z`: ends with `"modifies \`logs/advisor_checks.`"
+
+These are incomplete reviews captured in the log. The log faithfully records what was generated, but truncated advisor responses indicate the underlying hook may still have token or capture issues.
+
+**2. `08:51:40Z` entry is a detection record, not a review**
+
+The final entry flags unpushed commit `46fccce` (`test: add memo generation test batch`) and instructs `git push github main`. This diff itself is that push — so the log accurately reflects the state at time of generation.
+
+**3. Summary table in `05:40:39Z` is incomplete**
+
+```markdown
+| Item | Severity |
+|---|
+```
+
+The table body is missing. Minor cosmetic issue in the log record.
+
+**4. No functional code changed**
+
+All substantive issues (truncated reviews, `head -z` portability, subshell ARCHIVE_COUNT bug, archive retention) were flagged in prior entries and are in `advisor_check.sh`, which is not part of this diff.
+
+---
+
+### Assessment
+
+This is a log append. The log content accurately records advisor activity. The truncated entries are a symptom of an existing bug in the hook, not introduced here.
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T09:07:55Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### What's Here
+
+This diff appends 376 lines of advisor review log entries to `logs/advisor_checks.md`. No functional code changes.
+
+---
+
+### Observations
+
+**1. Log-only commit**
+The actual code under review (`advisor_check.sh`, `scripts/night_research.py`) doesn't appear in this diff. The log entries reference those files, but this commit only adds log records. This is expected behavior for the advisor logging system.
+
+**2. Truncated entries**
+Several log entries are visibly cut off mid-sentence:
+- `05:41:22Z`: ends with "`advisor_check.sh` has"
+- `05:42:08Z`: ends with "the rationale in the commit"
+- `05:42:45Z`: ends with "modifies `logs/advisor_checks.`"
+
+These truncations suggest the logging mechanism has a buffer or output size limit cutting off responses. The content captured is incomplete, which undermines the audit trail purpose.
+
+**3. Incomplete summary table**
+The `05:40:39Z` entry contains a Markdown table with no rows — just `|---|` — indicating the response was truncated before the table body was written.
+
+**4. Unpushed commit flagged at `08:51:40Z`**
+The final entry is a `🔴 Unpushed Commits` status, not an advisor review. This is expected system behavior, not an issue with this commit itself.
+
+**5. Log growth**
+Multiple entries within this batch itself note the unbounded growth concern for `advisor_checks.md`. The rotation fix (referenced in the logs) is not visible in this diff to confirm it's active.
+
+---
+
+### Issues
+
+- Truncated log entries are a data quality problem — partial reviews are worse than no reviews since they appear complete at a glance
+- The `05:40:39Z` table is structurally malformed Markdown
+
+These are logging infrastructure issues, not introduced by this commit directly.
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T09:12:21Z
+**Status**: 🔴 Unpushed Commits
+**Error**: ❌ UNPUSHED COMMITS detected:
+b4d4797 test: stop hook verification case 5
+7725a9a test: stop hook verification case 4
+635d899 test: stop hook verification case 3
+2a537f4 test: stop hook verification case 2
+6e4e0f4 test: stop hook verification case 1
+
+Run: git push github main
+
+---
+
+# Advisor Check: 2026-08-20T09:12:35Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### Changes Summary
+A single new file `logs/stop_hook_test_5.md` was added containing test log data for a "Stop Hook" verification case.
+
+### Review
+
+**Code Quality & Correctness**
+- This is purely a log/documentation file, not executable code. No logic to evaluate.
+- The file is well-structured and consistent with what appears to be a series of test log files (case 5 implies cases 1-4 exist).
+
+**Uncommitted Changes**
+- No concerns visible from the diff.
+
+**Test Coverage**
+- This *is* a test artifact (log output), not a test itself. No test coverage implications for production code.
+- However, if this is meant to document a test run, it's quite minimal — no pass/fail result, no expected vs. actual output recorded.
+
+**Documentation**
+- The file is self-descriptive but lacks test results (pass/fail, what was verified, outcome). A log file without outcomes has limited value.
+
+**Obvious Bugs/Issues**
+- No functional bugs (no code).
+- Minor concern: storing test logs in version control is unusual unless this is intentional (e.g., for audit/traceability of hook behavior). If these are generated artifacts, they may be better suited for `.gitignore`.
+
+### Suggestions
+- Consider adding a result field (e.g., `Result: PASS/FAIL`) to make the log meaningful.
+- If these files are auto-generated test artifacts, consider whether they belong in the repository or should be gitignored.
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T10:09:03Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### Summary
+This commit adds a single markdown log file `logs/stop_hook_test_5.md` as test verification data for a "Stop hook" test case.
+
+### Observations
+
+**1. Code Quality & Correctness**
+- The file is a simple markdown log with no functional code. No correctness issues to evaluate.
+
+**2. Uncommitted Changes**
+- Nothing apparent from the diff. The commit appears self-contained.
+
+**3. Test Coverage**
+- This *is* test/verification data, not a test itself. There is no associated automated test, assertion, or test runner integration. The file documents a manual test result but provides no reproducible or automated verification value.
+- If this is meant to track a test case, it should ideally be part of an automated test suite rather than a hand-written log file.
+
+**4. Documentation**
+- The file is minimal but serves its stated purpose as a log entry. The date matches the commit date (2026-08-20). Content is straightforward.
+
+**5. Issues / Concerns**
+- **Pattern concern**: Files like `stop_hook_test_1.md` through `stop_hook_test_5.md` suggest a series of manually tracked test logs. This is a low-value pattern — consider replacing with automated tests or a structured test report format.
+- **No functional impact**: This file has zero impact on application behavior or functionality.
+- **Minimal content**: The memo/store fields contain only placeholder-style data ("テスト店舗 5 のテストメモ"), suggesting this may be scaffolding rather than a meaningful test result.
+
+### Verdict
+The change is harmless but of questionable value. No bugs, no security issues, no incomplete functional work.
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T10:25:48Z
+**Status**: 🔴 Unpushed Commits
+**Error**: ❌ UNPUSHED COMMITS detected:
+70d3220 test: subagent commit for stop hook verification
+
+Run: git push github main
+
+---
+
+# Advisor Check: 2026-08-20T10:26:11Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### Changes Reviewed
+- **`logs/subagent_commit_test.md`** (new file, 1 line)
+
+---
+
+### Assessment
+
+**Code Quality & Correctness**
+This is a test artifact/log file created to verify stop hook functionality. It contains a single timestamp line. No functional code is involved.
+
+**Uncommitted Changes**
+None apparent.
+
+**Test Coverage**
+N/A — this is a log file, not executable code.
+
+**Documentation**
+The file is self-explanatory as a test artifact, though it has no broader documentation value.
+
+**Obvious Bugs or Issues**
+- This file appears to be a **testing artifact** (verifying subagent commit/stop hook behavior) that likely has no business being merged into the main repository permanently.
+- The `logs/` directory containing one-off test files could accumulate noise over time.
+- No `.gitignore` entry exists (based on what's shown) to prevent future such test files from being accidentally committed.
+- Minor: The filename `subagent_commit_test.md` suggests this was a transient verification step, not persistent project documentation.
+
+**Overall:** The change is harmless but is test scaffolding/noise that shouldn't be part of the permanent repo history. It serves no ongoing purpose.
+
+---
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T10:27:49Z
+**Status**: ✅ Advisor Review
+
+## Advisor Response
+## Code Review
+
+### Changes Overview
+- **File added**: `logs/subagent_commit_test.md` (1 line)
+
+### Analysis
+
+**Code Quality & Correctness**
+The change adds a single log/test file with a timestamp string. There is no functional code here.
+
+**Purpose & Necessity**
+This appears to be a test artifact used to verify stop hook behavior in a subagent workflow. Such files are typically not intended for long-term inclusion in the repository.
+
+**Concerns**
+- `logs/subagent_commit_test.md` looks like a throwaway verification artifact rather than a meaningful contribution. Test/verification artifacts like this ideally belong in a `.gitignore`d directory or should be cleaned up after verification.
+- No `logs/` directory exclusion appears to exist (or at least isn't shown), meaning this clutters the repo history.
+- The commit message (`test: subagent commit for stop hook verification`) confirms this is a transient test — it arguably shouldn't be merged into a mainline branch permanently.
+- No functional code, no bugs, no security issues.
+
+**Documentation/Coverage**: N/A — this is a log file, not code.
+
+**Recommendation**: If `logs/` is an intentional tracked directory for operational records, this is low-harm. If not, the directory should be added to `.gitignore` and this file removed.
+
+VERDICT: PASS
+
+---
+
+# Advisor Check: 2026-08-20T10:37:40Z
+**Status**: 🔴 Unpushed Commits
+**Error**: ❌ UNPUSHED COMMITS detected:
+8c423fc docs: add file dump review with memo_fact_check.py and results.json
+
+Run: git push github main
+
+---
+
