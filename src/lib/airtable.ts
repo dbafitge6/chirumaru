@@ -40,14 +40,19 @@ function splitPhotoUrls(raw: string | undefined): string[] {
 function toStore(record: AirtableRecord): Store {
   const f = record.fields;
   const photoUrls = splitPhotoUrls(f["Photos/Logo"]);
+  const exteriorPhotoUrls = splitPhotoUrls(f["外観写真"]);
+  const menuPhotoUrls = splitPhotoUrls(f["メニュー写真"]);
+
   return {
     id: record.id,
     name: f["Store Name"] ?? "",
     address: f["Address"] ?? "",
     phone: f["電話番号"] ?? "",
     hours: f["Business Hours"] ?? "",
-    photoUrl: photoUrls[0] ?? "",
+    photoUrl: exteriorPhotoUrls[0] ?? photoUrls[0] ?? "",
     photoUrls,
+    exteriorPhotoUrls,
+    menuPhotoUrls,
     tags: splitTags(f["Tags"]),
     area: f["Area"] ?? "",
     website: f["Website"] ?? "",

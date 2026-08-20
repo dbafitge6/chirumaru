@@ -15,3 +15,5 @@ generated_videos/*.mp4
 generated_videos/*.mov
 generated_videos/*.avi
 generated_slides/
+.vercel
+.env*

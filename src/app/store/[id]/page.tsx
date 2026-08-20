@@ -84,7 +84,14 @@ export default async function StorePage({
 
           <div className="mt-4 overflow-hidden rounded-[28px] bg-white/80 shadow-[0_6px_20px_-8px_rgba(74,54,46,0.25)]">
             <div className="h-56 w-full bg-gradient-to-br from-blush to-sand">
-              {store.photoUrl ? (
+              {store.exteriorPhotoUrls.length > 0 ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={store.exteriorPhotoUrls[0]}
+                  alt={store.name}
+                  className="h-full w-full object-cover"
+                />
+              ) : store.photoUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={store.photoUrl}
@@ -127,7 +134,27 @@ export default async function StorePage({
                 </p>
               )}
 
-              <PhotoScroll photos={store.photoUrls} storeName={store.name} />
+              {(store.exteriorPhotoUrls.length > 1 || store.menuPhotoUrls.length > 0) && (
+                <div className="mt-6 space-y-6 border-t border-umber/10 pt-6">
+                  {store.exteriorPhotoUrls.length > 1 && (
+                    <div>
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-umber/50 mb-3">
+                        店舗の様子
+                      </h2>
+                      <PhotoScroll photos={store.exteriorPhotoUrls.slice(1)} storeName={store.name} />
+                    </div>
+                  )}
+
+                  {store.menuPhotoUrls.length > 0 && (
+                    <div>
+                      <h2 className="text-xs font-semibold uppercase tracking-wider text-umber/50 mb-3">
+                        メニュー・商品
+                      </h2>
+                      <PhotoScroll photos={store.menuPhotoUrls} storeName={store.name} />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <dl className="mt-6 space-y-3 border-t border-umber/10 pt-6 text-sm">
                 {store.address && (
