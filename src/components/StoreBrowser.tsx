@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Store } from "@/lib/types";
 import StoreCard from "./StoreCard";
@@ -24,9 +25,15 @@ export default function StoreBrowser({
   areas: string[];
   discoveryTags?: string[];
 }) {
-  const [keyword, setKeyword] = useState("");
-  const [area, setArea] = useState("すべて");
-  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const [keyword, setKeyword] = useState(() => searchParams.get("keyword") || "");
+  const [area, setArea] = useState(() => searchParams.get("area") || "すべて");
+  const [activeTags, setActiveTags] = useState<string[]>(() => {
+    const tagsParam = searchParams.get("tags");
+    return tagsParam ? tagsParam.split(",").filter(Boolean) : [];
+  });
   const [stores, setStores] = useState<Store[]>([]);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -61,12 +68,6 @@ export default function StoreBrowser({
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem('favorites') || '[]');
     setFavorites(saved);
-
-    const savedFilters = JSON.parse(localStorage.getItem('storeFilters') || '{}');
-    if (savedFilters.keyword) setKeyword(savedFilters.keyword);
-    if (savedFilters.area) setArea(savedFilters.area);
-    if (savedFilters.activeTags) setActiveTags(savedFilters.activeTags);
-
     setMounted(true);
   }, []);
 
@@ -111,13 +112,16 @@ export default function StoreBrowser({
 
   useEffect(() => {
     if (mounted) {
-      localStorage.setItem('storeFilters', JSON.stringify({
-        keyword,
-        area,
-        activeTags,
-      }));
+      const params = new URLSearchParams();
+      if (keyword) params.set("keyword", keyword);
+      if (area && area !== "すべて") params.set("area", area);
+      if (activeTags.length > 0) params.set("tags", activeTags.join(","));
+
+      const queryString = params.toString();
+      const url = queryString ? `/?${queryString}` : "/";
+      router.push(url);
     }
-  }, [keyword, area, activeTags, mounted]);
+  }, [keyword, area, activeTags, mounted, router]);
 
   useEffect(() => {
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
@@ -139,7 +143,6 @@ export default function StoreBrowser({
     setKeyword("");
     setArea("すべて");
     setActiveTags([]);
-    localStorage.removeItem('storeFilters');
   }
 
   async function handleRequestLocation() {
