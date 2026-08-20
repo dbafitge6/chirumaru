@@ -25,15 +25,18 @@ if [ -f "$LOG_FILE" ]; then
 
     if [ "$FILE_SIZE" -gt "$LOG_MAX_SIZE" ]; then
         ARCHIVE="$LOGS_DIR/advisor_checks.archive.$(date -u +"%Y%m%d_%H%M%S").md"
-        mv "$LOG_FILE" "$ARCHIVE" || exit 2
+        if ! mv "$LOG_FILE" "$ARCHIVE" 2>/dev/null; then
+            echo "⚠️ Warning: Log rotation failed" >&2
+        fi
 
         # Clean up old archives, keep only the last N (sorted by name due to timestamp)
-        # Count archives and delete oldest if exceeding retention limit
-        ARCHIVE_COUNT=$(find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -type f 2>/dev/null | wc -l)
+        # Use portable find + while loop (no head -z which is GNU-only)
+        ARCHIVE_COUNT=$(find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -type f 2>/dev/null | wc -l | tr -d ' ')
         if [ "$ARCHIVE_COUNT" -gt "$ARCHIVE_RETENTION" ]; then
             TO_DELETE=$((ARCHIVE_COUNT - ARCHIVE_RETENTION))
-            find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -type f -print0 2>/dev/null | \
-                sort -z | head -z -n "$TO_DELETE" | xargs -0 rm -f 2>/dev/null
+            # Delete oldest archives (names sort chronologically due to YYYYMMDD_HHMMSS)
+            find "$LOGS_DIR" -maxdepth 1 -name 'advisor_checks.archive.*.md' -type f | \
+                sort | head -n "$TO_DELETE" | xargs rm -f 2>/dev/null
         fi
     fi
 fi
