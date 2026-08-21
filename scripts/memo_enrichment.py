@@ -82,7 +82,7 @@ def get_shops_needing_enrichment(token: str) -> List[Dict[str, Any]]:
         shop_name = fields.get('Store Name', 'Unknown')
         memo = fields.get('一言メモ', '').strip()
         tags = fields.get('タグ', '')
-        website_url = fields.get('Website URL', '').strip()
+        website_url = fields.get('Website', '').strip()
 
         # Check if memo is short (< 20 chars) or empty
         # Tags filtering is skipped for now since memo is primary criterion
@@ -262,8 +262,8 @@ def main():
 
         shop_name = fields.get('Store Name', 'Unknown')
         area = fields.get('Area', '')
-        menu = fields.get('Menu/Features', '')
-        website_url = fields.get('Website URL', '')
+        menu = fields.get('メニュー', '')
+        website_url = fields.get('Website', '')
 
         print(f"\n[{idx}/{len(shops)}] Processing: {shop_name}")
         print(f"  Record ID: {record_id}")
