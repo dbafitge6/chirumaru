@@ -27,26 +27,27 @@ def load_latest_research() -> dict:
 
 def format_research_report(data: dict) -> str:
     """Format research data into email body"""
-    html = """
+    timestamp = data['timestamp']
+    html = f"""
     <html>
     <head>
         <meta charset="UTF-8">
         <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .header { background: #2c3e50; color: white; padding: 20px; text-align: center; }
-            .section { margin: 20px 0; padding: 15px; border-left: 4px solid #3498db; }
-            .metric { display: inline-block; margin: 10px 20px 10px 0; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
-            th { background: #f5f5f5; font-weight: bold; }
+            body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+            .header {{ background: #2c3e50; color: white; padding: 20px; text-align: center; }}
+            .section {{ margin: 20px 0; padding: 15px; border-left: 4px solid #3498db; }}
+            .metric {{ display: inline-block; margin: 10px 20px 10px 0; }}
+            table {{ width: 100%; border-collapse: collapse; }}
+            th, td {{ padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }}
+            th {{ background: #f5f5f5; font-weight: bold; }}
         </style>
     </head>
     <body>
         <div class="header">
             <h1>📊 ちるまる 夜間リサーチレポート</h1>
-            <p>{}</p>
+            <p>{timestamp}</p>
         </div>
-    """.format(data['timestamp'])
+    """
 
     for result in data['results']:
         result_type = result.get('type', 'unknown')
@@ -104,9 +105,8 @@ def format_research_report(data: dict) -> str:
             html += "</div>"
 
         elif result_type == 'market_trends':
-            html += "<div class='section'><h2>🔍 市場トレンド</h2><p>{}</p></div>".format(
-                result.get('note', 'No data available')
-            )
+            note = result.get('note', 'No data available')
+            html += f"<div class='section'><h2>🔍 市場トレンド</h2><p>{note}</p></div>"
 
         elif result_type == 'analysis':
             html += "<div class='section'><h2>💡 AIによる改善提案</h2>"
