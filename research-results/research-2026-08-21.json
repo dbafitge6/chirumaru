@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-21T09:08:12.000630",
+  "timestamp": "2026-08-21T10:16:25.119223",
   "timezone": "Asia/Tokyo",
   "results": [
     {
@@ -76,30 +76,30 @@
       "suggestions": [
         {
           "title": "Increase Instagram posting frequency and optimize posting times",
-          "problem": "Instagram reach is critically low (2 people today), indicating minimal content distribution or posting activity",
-          "root_cause": "Likely infrequent posting schedule or posts published during off-peak hours when the target audience (bakery/cafe enthusiasts) are less active. Instagram's algorithm deprioritizes accounts with inconsistent posting patterns.",
-          "suggestion": "Establish a consistent posting schedule of 4-5 posts per week, specifically targeting 7-9 AM and 12-1 PM JST (peak cafe/bakery discovery times). Use Instagram's scheduling feature to maintain consistency. Include location tags and bakery-specific hashtags (#パン屋 #カフェ #新作スイーツ) in every post.",
-          "expected_impact": "Increase daily reach from 2 to 50-100+ by improving algorithmic distribution and catching users during peak discovery hours",
-          "implementation_note": "Create a content calendar with posts on Mon/Wed/Fri/Sat/Sun. Example: Monday 8 AM (new bakery feature), Wednesday 1 PM (bakery interview), Friday 7 AM (weekend recommendations), Sunday 12 PM (week preview). Track which times generate highest engagement and adjust accordingly."
+          "problem": "Instagram reach is critically low (2 today), indicating minimal audience exposure and potential posting inactivity or poor timing",
+          "root_cause": "Chirumaru likely posts infrequently or at suboptimal times when the target audience (bakery/cafe enthusiasts) is less active. Japanese users typically engage most during morning commute (7-9 AM) and evening leisure time (7-10 PM)",
+          "suggestion": "Establish a consistent posting schedule of 4-5 times per week, with posts scheduled for 8 AM and 7 PM JST. Focus on carousel posts featuring bakery/cafe discoveries with location tags and user-generated content to boost algorithmic reach",
+          "expected_impact": "Increase daily Instagram reach from 2 to 50-100 by improving visibility during peak engagement windows; this could drive 15-25% additional website traffic",
+          "implementation_note": "Create a content calendar using Instagram's scheduling feature. Example post structure: [Image 1: Bakery exterior] → [Image 2: Featured pastry close-up] → [Image 3: Cafe interior] with caption template: '【新発見】[店名] - [特徴3つ] #カフェ好きさんと繋がりたい #パン屋さん #[地域]'"
         },
         {
-          "title": "Reduce bounce rate by improving website landing page relevance",
-          "problem": "Engagement rate is low (44% of sessions are engaged) with recent trend deterioration (0 engaged sessions on 20260821). Website traffic shows 2-9 sessions daily but only 44-56% result in meaningful engagement.",
-          "root_cause": "Users arriving at the website from Instagram or search may not find the content they're looking for immediately. Homepage might lack clear value proposition or navigation, causing users to leave without exploring bakery listings.",
-          "suggestion": "Create a dedicated landing page for Instagram traffic that immediately showcases: (1) Top-rated bakeries near user's location, (2) New bakery additions this week, (3) Clear search/filter functionality. Add a sticky header with prominent search bar and category filters (by region, bakery type, specialty). Implement breadcrumb navigation for better UX.",
-          "expected_impact": "Increase engaged sessions ratio from 44% to 65-70%, meaning more visitors explore bakery listings. With 9 daily sessions, this could increase engaged sessions from 4 to 6 per day.",
-          "implementation_note": "Example landing page structure: ```<header sticky><SearchBar placeholder='地域名で検索' /></header><section><PopularBakeries /></section><section><NewAdditions /></section><section><RegionFilter /></section>``` Track which content sections receive most clicks and double down on high-performing categories."
+          "title": "Reduce session drop-off and improve content engagement on website",
+          "problem": "Website shows declining engagement: engaged_sessions represent only 44-56% of total sessions, and recent days (Aug 20-21) show sharp drops in sessions (9→2) with zero engaged sessions on Aug 21",
+          "root_cause": "Users visiting the site are not finding compelling content to interact with. Possible causes: unclear navigation, lack of filtering options for bakery/cafe search, slow page load times, or insufficient bakery listing information (hours, menus, reviews)",
+          "suggestion": "Implement a prominent search/filter widget on the homepage allowing users to filter by: (1) bakery type (croissants, sourdough, wagashi, etc.), (2) location/prefecture, (3) rating/reviews. Add rich snippets showing bakery photos, operating hours, and average rating on listing cards to encourage clicks",
+          "expected_impact": "Increase engaged_sessions ratio from 44-56% to 65-75%; reduce bounce rate by 20%; improve average session duration by 40-60 seconds",
+          "implementation_note": "Example filter component structure: ```html <div class='filter-bar'><select id='type'>オプション</select><input id='location' placeholder='地域を検索'/><button>検索</button></div>``` and implement lazy-loading bakery cards with image thumbnails, 2-3 review highlights, and clickable 'View Details' CTA"
         },
         {
-          "title": "Create Instagram content that drives website traffic through clear CTAs",
-          "problem": "Instagram reach is minimal (2 today) and there's no visible connection between Instagram activity and website sessions. The 2-9 daily website sessions don't correlate with Instagram posting patterns.",
-          "root_cause": "Instagram posts likely lack clear calls-to-action (CTAs) directing followers to the website, or posts don't include direct links/QR codes. Followers may see content but not know how to visit the website to explore bakeries.",
-          "suggestion": "Every Instagram post should include: (1) A dedicated link in bio pointing to featured bakery or 'new bakeries this week' page, (2) '詳細はプロフのリンクから' CTA in caption, (3) QR code linking to specific bakery pages, (4) Swipe-up sticker if account has 10k+ followers. Test using URL shorteners (bit.ly) to track click-through rate for each post.",
-          "expected_impact": "Drive 5-10 direct visits per Instagram post to the website, increasing daily sessions from 5-9 to 12-18. If Instagram posts reach 50-100 people with 5-10% CTR, expect 2-5 new sessions per post.",
-          "implementation_note": "Example caption format: '🍞 新潟県燕三条の話題のパン屋さんをご紹介! 🎯 詳細はプロフのリンクから👆 #パン屋 #新潟グルメ'. Create short URLs: `chirumaru.jp/bakery/new-week` for tracking. Monitor UTM parameters: `?utm_source=instagram&utm_medium=bio&utm_campaign=bakery-feature` to measure conversion."
+          "title": "Re-engage users through email/push notifications after Instagram posts",
+          "problem": "Instagram reach (2) and website traffic are disconnected; there's no visible funnel converting Instagram awareness into website visits. Weekend traffic collapsed (Aug 16-17, Aug 21)",
+          "root_cause": "Users who see Instagram posts may not remember to visit the website later, especially during low-engagement periods. Instagram algorithm may not surface Chirumaru content to users who don't actively follow the account. Weekend dips suggest lack of weekend-specific content or retargeting",
+          "suggestion": "Create an Instagram-to-website retargeting workflow: (1) Add 'Link in Bio' CTA with specific landing page (e.g., '今週のイチオシ' featured bakery), (2) Implement push notifications on website for users who visited but didn't engage, (3) Post weekend-specific content Friday evening (e.g., 'Weekend Cafe Guide') to capture leisure browsing",
+          "expected_impact": "Convert 10-15% of Instagram viewers to website visitors; increase weekend sessions by 30-50%; boost repeat visit rate (returning users) by 25%",
+          "implementation_note": "Example push notification: {'title': '新しいパン屋が登録されました', 'body': '〇〇県で見つけた最高のクロワッサン', 'icon': '[bakery_image]', 'badge': 'NEW'}. Implement with Firebase Cloud Messaging or Web Push API, targeting users who bounced after <30 seconds"
         }
       ],
-      "timestamp": "2026-08-21T09:08:12.000617"
+      "timestamp": "2026-08-21T10:16:25.119211"
     }
   ]
 }
