@@ -7,6 +7,7 @@ import json
 import os
 import sys
 import subprocess
+import re
 from datetime import datetime
 from typing import Dict, List, Any, Optional
 import requests
@@ -123,10 +124,11 @@ Web検索結果:
 - 「です」「ます」で終わらない
 - 評価語（旨い、絶品、人気、おすすめ等）を使わない
 - 語尾バリエーション：体言止め、「〜が名物」「〜特徴」など
+- メモ本体に文字数や記号による注釈を一切含めないこと
 
 例:
-- 「直火焙煎コーヒーが特徴。温かみのある内装」（18字）
-- 「シェアスペース内のカフェ」（11字）
+- 「直火焙煎コーヒーが特徴。温かみのある内装」
+- 「シェアスペース内のカフェ」
 
 必ず以下のように答えてください。考える必要はなく、即座にメモ候補を日本語で出力してください:
 
@@ -157,12 +159,16 @@ Web検索結果:
 
         # Validate length and non-empty
         print(f"[DEBUG] Memo validation: len={len(memo)}, content='{memo}'")
-        if len(memo) <= 35 and memo:
-            print(f"[DEBUG] Memo valid, returning: {memo}")
-            return memo
+
+        # Remove character count annotations like （26字） or (26 chars) as safety measure
+        memo_cleaned = re.sub(r'（\d+字）', '', memo).strip()
+
+        if len(memo_cleaned) <= 35 and memo_cleaned:
+            print(f"[DEBUG] Memo valid, returning: {memo_cleaned}")
+            return memo_cleaned
         else:
-            if memo:
-                print(f"[DEBUG] Memo too long ({len(memo)} chars): {memo[:50]}")
+            if memo_cleaned:
+                print(f"[DEBUG] Memo too long ({len(memo_cleaned)} chars): {memo_cleaned[:50]}")
             else:
                 print(f"[DEBUG] Memo is empty or None")
             return None
