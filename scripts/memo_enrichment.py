@@ -136,8 +136,9 @@ Web検索結果:
 
     try:
         response = client.messages.create(
-            model='claude-opus-5',
+            model='claude-sonnet-5',
             max_tokens=100,
+            thinking={"type": "disabled"},
             messages=[
                 {'role': 'user', 'content': prompt}
             ]
