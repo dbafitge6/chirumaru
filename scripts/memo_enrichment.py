@@ -303,6 +303,8 @@ def main():
                 'record_id': record_id,
                 'shop_name': shop_name,
                 'memo_candidate': memo_candidate,
+                'source_url': website_url,
+                'status': verification['status'],
                 'reason': reason
             })
 
@@ -341,6 +343,8 @@ def main():
                 f.write(f'### {item["shop_name"]}\n')
                 f.write(f'- **Record ID**: {item["record_id"]}\n')
                 f.write(f'- **Memo Candidate**: `{item["memo_candidate"]}` ({len(item["memo_candidate"])} chars)\n')
+                f.write(f'- **Source**: {item["source_url"]}\n')
+                f.write(f'- **Status**: {item["status"]}\n')
                 f.write(f'- **Reason**: {item["reason"]}\n\n')
 
         if results['errors']:
