@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 JS_RENDER_DOMAINS = {
     'komeda.co.jp',
     'tullys.co.jp',
+    'instagram.com',
 }
 
 def extract_keywords(memo: str, store_name: str) -> List[str]:
