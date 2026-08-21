@@ -78,7 +78,7 @@ def check_memo_facts(memo: str, store_name: str, url: str) -> Dict[str, Any]:
         parsed = urlparse(url)
         domain = parsed.netloc or parsed.path.split('/')[0]
 
-        if domain in JS_RENDER_DOMAINS:
+        if any(domain == d or domain.endswith('.' + d) for d in JS_RENDER_DOMAINS):
             return {
                 'memo': memo,
                 'store_name': store_name,
