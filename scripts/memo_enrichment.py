@@ -219,6 +219,13 @@ def verify_memo_with_fact_check(shop_name: str, memo: str, url: str) -> Dict[str
                 'result': fact_result,
                 'reason': f"Verified ({fact_result.get('match_count', 0)}/{fact_result.get('total_keywords', 0)} keywords)" if fact_result else "Verified"
             }
+        elif output.get('skipped'):
+            fact_result = output['skipped'][0] if output['skipped'] else None
+            return {
+                'status': 'SKIPPED',
+                'result': fact_result,
+                'reason': f"Skipped - {fact_result.get('reason', 'unknown reason')}" if fact_result else "Skipped"
+            }
         elif output.get('unverified'):
             fact_result = output['unverified'][0] if output['unverified'] else None
             return {

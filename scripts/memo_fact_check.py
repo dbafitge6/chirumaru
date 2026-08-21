@@ -10,6 +10,12 @@ import json
 import sys
 import requests
 from typing import Dict, List, Any
+from urllib.parse import urlparse
+
+JS_RENDER_DOMAINS = {
+    'komeda.co.jp',
+    'tullys.co.jp',
+}
 
 def extract_keywords(memo: str, store_name: str) -> List[str]:
     """Extract keywords from memo for verification."""
@@ -63,9 +69,26 @@ def check_memo_facts(memo: str, store_name: str, url: str) -> Dict[str, Any]:
             'verified': bool,
             'matched_keywords': List[str],
             'missing_keywords': List[str],
-            'status': 'OK' | 'UNVERIFIED' | 'FETCH_ERROR'
+            'status': 'OK' | 'UNVERIFIED' | 'FETCH_ERROR' | 'SKIPPED'
         }
     """
+
+    # Check if domain uses JavaScript rendering (not verifiable via requests)
+    if url:
+        parsed = urlparse(url)
+        domain = parsed.netloc or parsed.path.split('/')[0]
+
+        if domain in JS_RENDER_DOMAINS:
+            return {
+                'memo': memo,
+                'store_name': store_name,
+                'url': url,
+                'verified': None,
+                'matched_keywords': [],
+                'missing_keywords': [],
+                'status': 'SKIPPED',
+                'reason': 'Domain uses JavaScript rendering (not verifiable via requests)'
+            }
 
     # Fetch content
     content = fetch_url_content(url)
@@ -130,7 +153,8 @@ def main():
         'timestamp': __import__('datetime').datetime.now().isoformat(),
         'memos_checked': len(memos),
         'verified': [],
-        'unverified': []
+        'unverified': [],
+        'skipped': []
     }
 
     for memo_data in memos:
@@ -140,7 +164,9 @@ def main():
             url=memo_data['url']
         )
 
-        if result['status'] == 'OK' and result['verified']:
+        if result['status'] == 'SKIPPED':
+            results['skipped'].append(result)
+        elif result['status'] == 'OK' and result['verified']:
             results['verified'].append(result)
         else:
             results['unverified'].append(result)
@@ -152,6 +178,7 @@ def main():
             'total': len(memos),
             'verified_count': len(results['verified']),
             'unverified_count': len(results['unverified']),
+            'skipped_count': len(results['skipped']),
             'verification_rate': f"{len(results['verified']) / len(memos) * 100:.1f}%" if memos else "N/A"
         }
     }
