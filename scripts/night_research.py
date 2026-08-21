@@ -273,6 +273,62 @@ def save_research_results(data: Dict[str, Any]) -> str:
 
     return filepath
 
+def send_ntfy_notification(research_data: Dict[str, Any]) -> bool:
+    """Send research results summary via ntfy.sh"""
+    ntfy_topic = "chirumaru-nr-gcfpt"
+    ntfy_url = f"https://ntfy.sh/{ntfy_topic}"
+
+    # Extract summary from results
+    summary_lines = []
+    summary_lines.append("📊 ちるまる 夜間リサーチ完了")
+
+    for result in research_data.get('results', []):
+        result_type = result.get('type', 'unknown')
+
+        if result_type == 'instagram_performance':
+            metrics = result.get('metrics', [])
+            if metrics:
+                metric_str = ', '.join([f"{m['name']}: {m['value']}" for m in metrics])
+                summary_lines.append(f"📱 Instagram: {metric_str}")
+
+        elif result_type == 'ga4_analytics':
+            rows = result.get('rows', [])
+            if rows:
+                latest = rows[0]
+                summary_lines.append(f"📈 GA4 (最新): セッション {latest.get('sessions', 'N/A')}, ユーザー {latest.get('active_users', 'N/A')}, エンゲージメント {latest.get('engaged_sessions', 'N/A')}")
+
+        elif result_type == 'new_shops':
+            count = result.get('count', 0)
+            summary_lines.append(f"🏪 新規店舗: {count}件")
+
+        elif result_type == 'analysis':
+            suggestions = result.get('suggestions', [])
+            if suggestions:
+                summary_lines.append(f"💡 改善提案: {len(suggestions)}件")
+                for i, s in enumerate(suggestions, 1):
+                    summary_lines.append(f"   {i}. {s.get('title', 'N/A')}")
+
+    message = "\n".join(summary_lines)
+
+    try:
+        print(f"\n📲 Sending ntfy.sh notification to {ntfy_topic}...")
+        response = requests.post(
+            ntfy_url,
+            data=message.encode('utf-8'),
+            headers={'Content-Type': 'text/plain; charset=utf-8'}
+        )
+
+        if response.status_code == 200:
+            print(f"   ✓ Notification sent successfully")
+            return True
+        else:
+            print(f"   ⚠ Notification failed: {response.status_code} {response.text}")
+            return False
+
+    except Exception as e:
+        print(f"   ⚠ Notification error: {str(e)}")
+        return False
+
 def main():
     print("🌙 Starting night research...")
 
@@ -339,6 +395,11 @@ def main():
     except Exception as e:
         print(f"\n❌ Failed to save research results: {str(e)}")
         sys.exit(1)
+
+    try:
+        send_ntfy_notification(research_data)
+    except Exception as e:
+        print(f"⚠ Failed to send ntfy notification (non-critical): {str(e)}")
 
 if __name__ == '__main__':
     main()
