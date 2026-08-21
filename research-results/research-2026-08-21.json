@@ -1,0 +1,105 @@
+{
+  "timestamp": "2026-08-21T08:54:10.587819",
+  "timezone": "Asia/Tokyo",
+  "results": [
+    {
+      "type": "instagram_performance",
+      "metrics": [
+        {
+          "name": "reach",
+          "value": 2,
+          "period": "day"
+        }
+      ]
+    },
+    {
+      "type": "ga4_analytics",
+      "period": "last_7_days",
+      "rows": [
+        {
+          "date": "20260820",
+          "sessions": "9",
+          "active_users": "2",
+          "engaged_sessions": "4"
+        },
+        {
+          "date": "20260815",
+          "sessions": "8",
+          "active_users": "4",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260817",
+          "sessions": "7",
+          "active_users": "3",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260818",
+          "sessions": "6",
+          "active_users": "4",
+          "engaged_sessions": "4"
+        },
+        {
+          "date": "20260814",
+          "sessions": "5",
+          "active_users": "4",
+          "engaged_sessions": "2"
+        },
+        {
+          "date": "20260819",
+          "sessions": "5",
+          "active_users": "3",
+          "engaged_sessions": "5"
+        },
+        {
+          "date": "20260816",
+          "sessions": "2",
+          "active_users": "2",
+          "engaged_sessions": "1"
+        },
+        {
+          "date": "20260821",
+          "sessions": "2",
+          "active_users": "2",
+          "engaged_sessions": "0"
+        }
+      ]
+    },
+    {
+      "type": "new_shops",
+      "count": 0,
+      "shops": []
+    },
+    {
+      "type": "analysis",
+      "suggestions": [
+        {
+          "title": "Boost Instagram Content Frequency and Hashtag Strategy",
+          "problem": "Instagram reach is critically low at only 2 impressions today, indicating severe visibility issues despite having website traffic",
+          "root_cause": "Likely infrequent posting schedule and/or ineffective hashtag strategy. With only 2 reach, content is not being discovered by the target audience searching for bakery/cafe recommendations",
+          "suggestion": "Increase posting frequency to at least 4-5 times per week with strategic hashtags. Create a content calendar focused on: new bakery discoveries, seasonal sweets, customer features, and behind-the-scenes content. Use 20-25 relevant hashtags including mix of high-volume (#パン屋さん, #カフェ) and niche tags (#ちるまる, #新作パン)",
+          "expected_impact": "Increase Instagram reach from 2 to 50-100+ daily impressions within 2-3 weeks, driving referral traffic to website and improving overall brand awareness",
+          "implementation_note": "Example hashtag sets: #パン屋 #カフェ好きさんと繋がりたい #新作パン紹介 #ベーカリー #カフェ巡り #スイーツ好きさんと繋がりたい #ちるまるで発見 #おいしいパン屋さん"
+        },
+        {
+          "title": "Improve Session-to-Engagement Conversion Rate",
+          "problem": "Website engagement ratio is poor: only 44% of sessions are engaged (45 engaged out of 102 total sessions). Recent days show deteriorating engagement (0 engaged sessions on 8/21)",
+          "root_cause": "Users are visiting but not interacting meaningfully with content. Likely causes: unclear site navigation, slow page load times, uncompelling bakery listings, or missing call-to-action elements that guide users to explore bakeries",
+          "suggestion": "Audit and optimize key landing pages and bakery detail pages. Add engagement hooks: prominent 'Add to Favorites' buttons, high-quality bakery photos, user reviews, location maps, and operating hours. Implement a sticky header with search/filter functionality. Test reducing initial page load time to under 2 seconds",
+          "expected_impact": "Increase engaged sessions from 44% to 60-70% conversion rate, resulting in 60-70 engaged sessions from current 102 total sessions. Better engagement signals improve SEO ranking and increase repeat visits",
+          "implementation_note": "Add engagement tracking: document clicks on favorite buttons, reviews read, map views, and time-on-page per bakery. Set target: average session duration >2 minutes and at least 2 page views per session"
+        },
+        {
+          "title": "Stabilize Traffic Volatility with Content Strategy",
+          "problem": "Website traffic shows high volatility: sessions range from 2-9 daily with no clear pattern. Aug 20 peaked at 9 sessions but Aug 21 dropped to 2, and recent days (8/20-8/21) show declining engagement (0 engaged sessions)",
+          "root_cause": "Lack of consistent, scheduled content updates or seasonal promotion strategy. Users visit sporadically without regular reasons to return. No apparent correlation between Instagram activity and website traffic suggests weak cross-channel promotion",
+          "suggestion": "Establish weekly content calendar with guaranteed updates: 'Bakery of the Week' feature posted every Monday, weekend café recommendations posted Fridays, seasonal menu highlights posted monthly. Cross-promote Instagram posts to website via banner or newsletter to create traffic predictability",
+          "expected_impact": "Stabilize daily sessions to consistent 8-12 range by creating recurring user visit patterns. Expected 30% increase in average daily sessions and reduced volatility through regular content scheduling",
+          "implementation_note": "Example weekly schedule: Mon='新作パン紹介', Wed='カフェスポット', Fri='週末のおすすめ'. Use GA4 event tracking: track which content types drive highest engagement, then double down on top performers"
+        }
+      ],
+      "timestamp": "2026-08-21T08:54:10.587806"
+    }
+  ]
+}
