@@ -76,6 +76,7 @@ jobs:
         if: steps.check_interval.outputs.should_run == 'true'
         env:
           AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+          POSTIZ_API_KEY: ${{ secrets.POSTIZ_API_KEY }}
         run: python scripts/auto_instagram_post.py
 
       - name: Commit changes
