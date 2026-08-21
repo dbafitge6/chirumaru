@@ -312,21 +312,33 @@ def send_ntfy_notification(research_data: Dict[str, Any]) -> bool:
 
     try:
         print(f"\n📲 Sending ntfy.sh notification to {ntfy_topic}...")
+        print(f"   URL: {ntfy_url}")
+        print(f"   Message length: {len(message)} bytes")
+        print(f"   Message preview: {message[:100]}...")
+
         response = requests.post(
             ntfy_url,
             data=message.encode('utf-8'),
-            headers={'Content-Type': 'text/plain; charset=utf-8'}
+            headers={'Content-Type': 'text/plain; charset=utf-8'},
+            timeout=10
         )
+
+        print(f"   Response status: {response.status_code}")
+        print(f"   Response headers: {dict(response.headers)}")
+        print(f"   Response body: {response.text[:500]}")
 
         if response.status_code == 200:
             print(f"   ✓ Notification sent successfully")
             return True
         else:
-            print(f"   ⚠ Notification failed: {response.status_code} {response.text}")
+            print(f"   ⚠ Notification failed: {response.status_code}")
+            print(f"   Response: {response.text}")
             return False
 
     except Exception as e:
-        print(f"   ⚠ Notification error: {str(e)}")
+        print(f"   ⚠ Notification error: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return False
 
 def main():
