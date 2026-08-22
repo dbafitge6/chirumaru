@@ -2,8 +2,8 @@ name: Night Research (Daily)
 
 on:
   schedule:
-    # 毎日 02:00 JST (17:00 UTC) に実行
-    - cron: '0 17 * * *'
+        # 毎日 07:00 JST (22:00 UTC) に実行
+        - cron: '0 22 * * *'
   workflow_dispatch:
 
 permissions:
