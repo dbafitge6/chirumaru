@@ -49,6 +49,11 @@
       "timestamp": "2026-08-15T01:28:06.880861",
       "status": "invalid",
       "warning": "Token validation failed"
+    },
+    {
+      "timestamp": "2026-08-22T01:20:45.145125",
+      "status": "invalid",
+      "warning": "Token validation failed"
     }
   ],
   "instagram_insights": [
